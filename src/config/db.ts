@@ -30,8 +30,4 @@ async function disconnect() {
 module.exports = { connect, disconnect };
 
 
-// en server.ts:
-// connect().catch(err => {
-//   console.error('DB connection error:', err);
-//   process.exit(1);
-// });
+
