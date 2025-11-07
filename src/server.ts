@@ -8,8 +8,8 @@ dotenv.config();
 
 //Conexion DB
 
-connect().catch(err => {
-  console.error('DB connection error:', err);
+connect().catch((err:Error) => {
+  console.error('DB connection error:', err.message);
   process.exit(1);
 });
 
