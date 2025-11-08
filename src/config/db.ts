@@ -3,7 +3,13 @@ const mongoose = require('mongoose');
 
 const MONGO_URI = process.env.MONGO_URI;
 
-let isConnected = false; 
+if (!MONGO_URI) {
+  // Fail fast with a helpful message instead of passing undefined into mongoose.connect
+  console.error('Missing required environment variable: MONGO_URI.\nPlease create a .env file or set MONGO_URI in your environment. Example:\nMONGO_URI=mongodb://user:pass@host:port/dbname');
+  throw new Error('MONGO_URI environment variable is not set');
+}
+
+let isConnected = false;
 
 async function connect() {
   if (isConnected) {
