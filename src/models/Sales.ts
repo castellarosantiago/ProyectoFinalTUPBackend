@@ -1,1 +1,0 @@
-//schema para las ventas
