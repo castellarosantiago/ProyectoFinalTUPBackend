@@ -17,6 +17,6 @@ const SaleSchema = new Schema<ISale>({
     total: {type:Number, required:true, min:0},
 })
 
-const VentaModel = model<ISale>('Sale', SaleSchema)
+const SaleModel = model<ISale>('Sale', SaleSchema)
 
-export default VentaModel;
+export default SaleModel;
