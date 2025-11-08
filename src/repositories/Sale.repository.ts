@@ -8,18 +8,17 @@ class SaleRepository {
     saleData: Partial<ISale>, // partial para que campos como _id no sean obligatorios
     session: ClientSession // sesion obligatoria
   ): Promise<ISale> {
-    
     const newSale = new SaleModel(saleData);
-    return newSale.save({session});
+    return newSale.save({ session });
   }
 
   //Buscar por id
-  public async findById(id:string | Types.ObjectId): Promise<ISale | null>{
-    return SaleModel.findById(id).exec()
+  public async findById(id: string | Types.ObjectId): Promise<ISale | null> {
+    return SaleModel.findById(id).exec();
   }
 
   //Buscar todos
-  public async findAll(filter:any ={}): Promise<ISale[]> {
-    return SaleModel.find(filter).sort({date:-1}).exec();
+  public async findAll(filter: any = {}): Promise<ISale[]> {
+    return SaleModel.find(filter).sort({ date: -1 }).exec(); // ordena a mas recientes
   }
 }
