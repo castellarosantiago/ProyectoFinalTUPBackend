@@ -24,7 +24,7 @@ export class CategoryRepository {
         return Category.findByIdAndDelete(id).exec()
     }
 
-    public async updateCategory(id:ObjectId, categoryData:CategoryInterface):Promise<CategoryInterface | null> {
+    public async updateCategory(id:ObjectId, categoryData:CategoryInputInterface):Promise<CategoryInterface | null> {
         return Category.findByIdAndUpdate(id, categoryData, { new:true }).exec()
     }
   
