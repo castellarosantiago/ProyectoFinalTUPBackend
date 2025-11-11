@@ -2,7 +2,7 @@ import { ObjectId } from 'mongoose';
 import Category from '../models/Category';
 import { CategoryInterface, CategoryInputInterface } from '../types/categoryType';
 
-export class CategoryRepository {
+class CategoryRepository {
 
     public async createCategory(categoryData:CategoryInputInterface):Promise<CategoryInterface> {
         return await Category.create(categoryData);
@@ -27,5 +27,6 @@ export class CategoryRepository {
     public async updateCategory(id:ObjectId, categoryData:CategoryInputInterface):Promise<CategoryInterface | null> {
         return Category.findByIdAndUpdate(id, categoryData, { new:true }).exec()
     }
-  
 }
+
+export default new CategoryRepository();
