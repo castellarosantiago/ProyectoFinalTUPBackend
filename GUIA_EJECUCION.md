@@ -42,8 +42,22 @@ npm install
 
 ### 2. Configurar variables de entorno
 
+<<<<<<< HEAD
 Crea un archivo `.env` en la raíz con las variables de entorno correspondientes
 
+=======
+Crea un archivo `.env` en la raíz con:
+
+```
+MONGO_URI=mongodb://usuario:contraseña@localhost:27017/proyectofinal
+PORT=5000
+NODE_ENV=development
+```
+
+**Opciones de MongoDB:**
+- **Local:** `mongodb://localhost:27017/proyectofinal`
+- **Atlas (cloud):** `mongodb+srv://usuario:pass@cluster.mongodb.net/proyectofinal?retryWrites=true`
+>>>>>>> 6b81f3c4e51e63f53e55216ff04fd6f5744e32a2
 
 ### 3. Ejecutar en desarrollo
 
