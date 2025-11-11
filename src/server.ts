@@ -1,34 +1,37 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-//Cargar variables de entorno
+
+// cargar variables de entorno
 dotenv.config();
-const { connect } = require('./config/db')
+const { connect } = require('./config/db');
 
-
-
-//Conexion DB
-
-connect().catch((err:Error) => {
+// conectar a base de datos
+connect().catch((err: Error) => {
   console.error('DB connection error:', err.message);
   process.exit(1);
 });
 
+// crear app express
 const app = express();
 
-
-//Middlewares
+// middlewares globales
 app.use(cors());
 app.use(express.json());
 
-//Ruta de prueba
+// rutas de autenticacion
+import authRoutes from './routes/auth.routes';
+app.use('/api/auth', authRoutes);
+
+// ruta de prueba
 app.get('/', (req: Request, res: Response) => {
-    res.status(200).send('API running successfully');
+  res.status(200).send('API running successfully');
 });
 
+// iniciar servidor
 const PORT = process.env.PORT;
 
 app.listen(PORT, () => {
-    console.log('Server running in PORT:', PORT);
-    console.log(`http://localhost:${PORT}`);
+  console.log('Server running in PORT:', PORT);
+  console.log(`http://localhost:${PORT}`);
 });

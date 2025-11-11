@@ -7,9 +7,9 @@
     "start": "ts-node src/server.ts",
     "dev": "ts-node-dev --respawn src/server.ts",
     "build": "tsc",
-    "test": "jest", 
-    "test:watch": "jest --watch", 
-    "test:coverage": "jest --coverage" 
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "repository": {
     "type": "git",
@@ -24,10 +24,16 @@
   },
   "homepage": "https://github.com/castellarosantiago/ProyectoFinalTUPBackend#readme",
   "dependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/react": "^19.2.3",
+    "@types/validator": "^13.15.6",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
-    "mongoose": "^8.19.2"
+    "mongoose": "^8.19.2",
+    "validator": "^13.15.23",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
