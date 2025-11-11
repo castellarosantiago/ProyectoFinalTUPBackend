@@ -8,7 +8,7 @@ export class CategoryRepository {
         return await Category.create(categoryData);
     }
   
-    public async getCategorys(): Promise<CategoryInterface[]> {
+    public async getCategories(): Promise<CategoryInterface[]> {
         return await Category.find({}).exec();
     }
 
