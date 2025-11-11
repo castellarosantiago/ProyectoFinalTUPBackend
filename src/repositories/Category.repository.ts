@@ -1,10 +1,10 @@
 import { ObjectId } from 'mongoose';
 import Category from '../models/Category';
-import { CategoryInterface } from '../types/categoryType';
+import { CategoryInterface, CategoryInputInterface } from '../types/categoryType';
 
 export class CategoryRepository {
 
-    public async createCategory(categoryData: CategoryInterface):Promise<CategoryInterface> {
+    public async createCategory(categoryData:CategoryInputInterface):Promise<CategoryInterface> {
         return await Category.create(categoryData);
     }
   
