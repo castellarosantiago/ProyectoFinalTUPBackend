@@ -16,10 +16,6 @@ class CategoryRepository {
         return await Category.findById(id).exec();
     }
 
-    public async findCategoryByName(name:string):Promise<CategoryInterface | null> {
-        return await Category.findOne({ 'name': name }).exec();
-    }
-
     public async deleteCategory(id:ObjectId):Promise<CategoryInterface | null> {
         return Category.findByIdAndDelete(id).exec()
     }
