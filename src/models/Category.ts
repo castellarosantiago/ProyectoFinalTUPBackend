@@ -11,3 +11,6 @@ const CategorySchema = new Schema<CategoryInterface>({
 // Crea el modelo
 // Es la clase que se usar para realizar operaciones CRUD
 const Category = model<CategoryInterface>('Category', CategorySchema);
+
+export default Category;
+
