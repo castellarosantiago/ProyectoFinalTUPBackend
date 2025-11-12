@@ -5,7 +5,7 @@ import { Types } from "mongoose";
 
 class CategoryController {
 
-    public async getCategories(res:Response) { 
+    public async getCategories(req:Request, res:Response) { 
         try {
             const categories = await CategoryRepository.getCategories();
             return res.status(200).json(categories);
@@ -76,6 +76,11 @@ class CategoryController {
         try {
             const objectId = new Types.ObjectId(id);
             const updatedCategory = await CategoryRepository.updateCategory(objectId, dataValidate);
+            
+            if (!updatedCategory){
+                return res.status(404).json({ message: "No se pudo modificar la categoría con el ID ingresado."});
+            }
+            
             return res.status(200).json({ message: "Categoría modificada correctamente.", category:updatedCategory});
         } catch (err){
             if (err instanceof Error){
