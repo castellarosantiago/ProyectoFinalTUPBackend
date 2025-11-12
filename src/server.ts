@@ -1,6 +1,8 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import categoryRouter from './routes/category.routes';
+
 //Cargar variables de entorno
 dotenv.config();
 const { connect } = require('./config/db')
@@ -25,6 +27,7 @@ app.use(express.json());
 app.get('/', (req: Request, res: Response) => {
     res.status(200).send('API running successfully');
 });
+app.use("/categories", categoryRouter);
 
 const PORT = process.env.PORT;
 
