@@ -33,7 +33,8 @@
     "express": "^5.1.0",
     "mongoose": "^8.19.2",
     "validator": "^13.15.23",
-    "zod": "^3.25.76"
+    "zod": "^3.25.76",
+    "jsonwebtoken": "^9.0.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
@@ -42,6 +43,7 @@
     "@types/jest": "^30.0.0",
     "@types/mongoose": "^5.11.96",
     "@types/node": "^24.9.2",
+  "@types/jsonwebtoken": "^9.0.2",
     "@types/supertest": "^6.0.3",
     "jest": "^30.2.0",
     "supertest": "^7.1.4",
