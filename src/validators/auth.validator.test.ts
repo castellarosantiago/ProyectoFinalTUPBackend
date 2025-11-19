@@ -7,23 +7,23 @@ describe('Auth Validation Schemas', () => {
     // debe aceptar datos validos
     test('should accept valid register data', async () => {
       const validData = {
-        nombre: 'Juan Perez',
+        name: 'Juan Perez',
         email: 'juan@example.com',
         password: 'Password123',
-        rol: 'empleado',
+        role: 'empleado',
       };
       const result = await registerSchema.parseAsync(validData);
-      expect(result.nombre).toBeDefined();
+      expect(result.name).toBeDefined();
       expect(result.email).toBeDefined();
     });
 
     // debe rechazar si no tiene mayuscula
     test('should reject password without uppercase', async () => {
       const invalidData = {
-        nombre: 'Juan',
+        name: 'Juan',
         email: 'juan@example.com',
         password: 'password123',
-        rol: 'empleado',
+        role: 'empleado',
       };
       try {
         await registerSchema.parseAsync(invalidData);
@@ -36,10 +36,10 @@ describe('Auth Validation Schemas', () => {
     // debe rechazar si no tiene numero
     test('should reject password without number', async () => {
       const invalidData = {
-        nombre: 'Juan',
+        name: 'Juan',
         email: 'juan@example.com',
         password: 'PasswordABC',
-        rol: 'empleado',
+        role: 'empleado',
       };
       try {
         await registerSchema.parseAsync(invalidData);
@@ -52,10 +52,10 @@ describe('Auth Validation Schemas', () => {
     // debe rechazar contrasena muy corta
     test('should reject password shorter than 8 characters', async () => {
       const invalidData = {
-        nombre: 'Juan',
+        name: 'Juan',
         email: 'juan@example.com',
         password: 'Pass12',
-        rol: 'empleado',
+        role: 'empleado',
       };
       try {
         await registerSchema.parseAsync(invalidData);
@@ -68,10 +68,10 @@ describe('Auth Validation Schemas', () => {
     // debe rechazar email invalido
     test('should reject invalid email', async () => {
       const invalidData = {
-        nombre: 'Juan',
+        name: 'Juan',
         email: 'not-an-email',
         password: 'Password123',
-        rol: 'empleado',
+        role: 'empleado',
       };
       try {
         await registerSchema.parseAsync(invalidData);
@@ -84,14 +84,14 @@ describe('Auth Validation Schemas', () => {
     // debe sanitizar caracteres especiales
     test('should sanitize HTML special characters', async () => {
       const dataWithHTML = {
-        nombre: '<script>alert("xss")</script>',
+        name: '<script>alert("xss")</script>',
         email: 'juan@example.com',
         password: 'Password123',
-        rol: 'empleado',
+        role: 'empleado',
       };
       const result = await registerSchema.parseAsync(dataWithHTML);
-      expect(result.nombre).not.toContain('<script>');
-      expect(result.nombre).toContain('&lt;');
+      expect(result.name).not.toContain('<script>');
+      expect(result.name).toContain('&lt;');
     });
   });
 
@@ -115,7 +115,7 @@ describe('Auth Validation Schemas', () => {
         password: 'Password123',
       };
       const result = await loginSchema.parseAsync(validData);
-      expect(result.rol).toBe('empleado');
+  expect(result.role).toBe('empleado');
     });
 
     // debe rechazar email invalido
