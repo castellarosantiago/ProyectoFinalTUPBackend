@@ -40,16 +40,12 @@
     "@types/dotenv": "^6.1.1",
     "@types/express": "^5.0.5",
     "@types/jest": "^30.0.0",
-    "@types/mongoose": "^5.11.96",
-<<<<<<< HEAD
-    "@types/node": "^24.9.2",
-  "@types/jsonwebtoken": "^9.0.2",
-=======
-    "@types/node": "^24.10.1",
-    "@types/react": "^19.2.4",
-    "@types/react-dom": "^19.2.3",
->>>>>>> ac0a12c493f5ab0411abdc7b2a38dc45439b52e9
-    "@types/supertest": "^6.0.3",
+"@types/mongoose": "^5.11.96",
+"@types/node": "^24.10.1",
+"@types/jsonwebtoken": "^9.0.2",
+"@types/react": "^19.2.4",
+"@types/react-dom": "^19.2.3",
+"@types/supertest": "^6.0.3",
     "jest": "^30.2.0",
     "supertest": "^7.1.4",
     "ts-jest": "^29.4.5",
