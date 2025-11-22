@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import categoryRouter from './routes/category.routes';
+import productRouter from './routes/product.routes';
 
 //Cargar variables de entorno
 dotenv.config();
@@ -27,7 +28,9 @@ app.use(express.json());
 app.get('/', (req: Request, res: Response) => {
     res.status(200).send('API running successfully');
 });
+// Rutas funcionales
 app.use("/categories", categoryRouter);
+app.use("/products", productRouter)
 
 const PORT = process.env.PORT;
 
