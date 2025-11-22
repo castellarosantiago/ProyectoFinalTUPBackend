@@ -14,11 +14,20 @@ class SaleRepository {
 
   //Buscar por id
   public async findById(id: string | Types.ObjectId): Promise<ISale | null> {
-    return SaleModel.findById(id).exec();
+    return SaleModel.findById(id)
+      .populate('user', 'nombre email rol')
+      .populate('detail.product', 'nombre precio stock categoria')
+      .exec();
   }
 
   //Buscar todos
   public async findAll(filter: any = {}): Promise<ISale[]> {
-    return SaleModel.find(filter).sort({ date: -1 }).exec(); // ordena a mas recientes
+    return SaleModel.find(filter)
+      .populate('user', 'nombre email rol')
+      .populate('detail.product', 'nombre precio stock categoria')
+      .sort({ date: -1 })
+      .exec();
   }
 }
+
+export default SaleRepository;

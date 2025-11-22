@@ -23,6 +23,10 @@ app.use(express.json());
 import authRoutes from './routes/auth.routes';
 app.use('/api/auth', authRoutes);
 
+// rutas de ventas
+import saleRoutes from './routes/sale.routes';
+app.use('/api/sales', saleRoutes);
+
 // ruta de prueba
 app.get('/', (req: Request, res: Response) => {
   res.status(200).send('API running successfully');
