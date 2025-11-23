@@ -29,6 +29,19 @@ class ProductRepository {
     public async updateProduct(id:Types.ObjectId, productData:ProductPutInterface):Promise<ProductInterface | null> {
         return Product.findByIdAndUpdate(id, productData, { new:true }).exec()
     }
+
+    // Opciones de filtrado
+    public async findProductByName(name:string):Promise<ProductInterface | null> {
+        return await Product.findOne({ name: { $regex: name, $options: 'i' } }).exec();
+    }
+
+    public async filterByCategory(id_category:Types.ObjectId):Promise<ProductInterface[]> {
+        return await Product.find({ id_category }).exec();
+    }
+
+    public async filterByPrice(minPrice:number, maxPrice:number):Promise<ProductInterface[]> {
+        return await Product.find({ price: { $gte: minPrice, $lte: maxPrice } }).exec();
+    }
 }
 
 export default new ProductRepository();

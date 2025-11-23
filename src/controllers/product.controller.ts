@@ -41,7 +41,7 @@ class ProductController {
 
         try {
             const newProduct = await ProductRepository.createProduct(dataValidate);
-            
+
             if (!newProduct) return res.status(400).json({ message: "La categoría ingresada no existe." });
         
             return res.status(201).json({ message: "Producto creado correctamente.", product:newProduct });
@@ -91,6 +91,61 @@ class ProductController {
             }
         }
     }
+
+    public async findProductByName(req:Request, res:Response){
+        const { name } = req.query;
+
+        try {
+
+            const product = await ProductRepository.findProductByName(String(name));
+
+            if (!product){
+                return res.status(404).json({ message: "No se encontró ningún producto con el nombre ingresado." });
+            }
+    
+            res.status(200).json(product);
+        } catch (err){
+            if (err instanceof Error){
+                return res.status(500).json({ message: "Ha ocurrido un problema al buscar un producto por su nombre.", error: err.message });
+            }
+        }
+    }
+
+    public async filterByCategory(req:Request, res:Response){
+        const { id_category } = req.query;
+
+        try {
+            const objectId = new Types.ObjectId(String(id_category));
+            
+            const products = await ProductRepository.filterByCategory(objectId);
+    
+            res.status(200).json(products);
+        } catch (err){
+            if (err instanceof Error){
+                return res.status(500).json({ message: "Ha ocurrido un problema al filtrar por categoría.", error: err.message });
+            }
+        }
+    }
+
+    public async filterByPrice(req:Request, res:Response){
+        const { minPrice, maxPrice } = req.query;
+
+        try {
+
+            const min = Number(minPrice);
+            const max = Number(maxPrice);
+
+            const products = await ProductRepository.filterByPrice(min, max);
+    
+            res.status(200).json(products);
+        } catch (err){
+            if (err instanceof Error){
+                return res.status(500).json({ message: "Ha ocurrido un problema al filtrar por precio.", error: err.message });
+            }
+        }
+    }
+
+
 }
 
 export default new ProductController();
