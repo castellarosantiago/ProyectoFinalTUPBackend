@@ -41,6 +41,9 @@ class ProductController {
 
         try {
             const newProduct = await ProductRepository.createProduct(dataValidate);
+            
+            if (!newProduct) return res.status(400).json({ message: "La categoría ingresada no existe." });
+        
             return res.status(201).json({ message: "Producto creado correctamente.", product:newProduct });
         } catch (err){
             if (err instanceof Error){
