@@ -1,5 +1,10 @@
-import { Request, Response } from 'express';
-import SaleRepository from '../repositories/Sale.repository';
+import { Request, Response } from "express";
+import SaleRepository from "../repositories/Sale.repository";
+import productRepository from "../repositories/Product.repository";
+import { ProductInterface } from "../types/product.interface";
+import { ISaleDetail } from "../types/sales.interface";
+import { SaleSchema } from "../schemas/sale.schema";
+import mongoose from "mongoose";
 
 const saleRepository = new SaleRepository();
 
@@ -7,10 +12,10 @@ const saleRepository = new SaleRepository();
 export const listSales = async (req: Request, res: Response) => {
   try {
     const { startDate, endDate, userId } = req.query;
-    
+
     // construir filtro dinamico
     const filter: any = {};
-    
+
     // filtro por rango de fechas
     if (startDate || endDate) {
       filter.date = {};
@@ -24,23 +29,23 @@ export const listSales = async (req: Request, res: Response) => {
         filter.date.$lt = end;
       }
     }
-    
+
     // filtro por usuario
     if (userId) {
       filter.user = userId;
     }
-    
+
     // buscar ventas usando el repositorio
     const sales = await saleRepository.findAll(filter);
-    
+
     return res.status(200).json({
-      message: 'Ventas obtenidas',
+      message: "Ventas obtenidas",
       total: sales.length,
-      sales: sales
+      sales: sales,
     });
   } catch (err) {
-    console.error('List sales error', err);
-    return res.status(500).json({ message: 'Error del servidor' });
+    console.error("List sales error", err);
+    return res.status(500).json({ message: "Error del servidor" });
   }
 };
 
@@ -48,28 +53,110 @@ export const listSales = async (req: Request, res: Response) => {
 export const getSaleDetail = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    
+
     // validar que el id sea valido
     if (!id) {
-      return res.status(400).json({ message: 'El ID de venta es requerido' });
+      return res.status(400).json({ message: "El ID de venta es requerido" });
     }
-    
+
     // buscar venta por id usando el repositorio
     const sale = await saleRepository.findById(id);
-    
+
     // verificar si existe la venta
     if (!sale) {
-      return res.status(404).json({ message: 'Venta no encontrada' });
+      return res.status(404).json({ message: "Venta no encontrada" });
     }
-    
+
     return res.status(200).json({
-      message: 'Detalle de venta obtenido',
-      sale: sale
+      message: "Detalle de venta obtenido",
+      sale: sale,
     });
   } catch (err) {
-    console.error('Get sale detail error', err);
-    return res.status(500).json({ message: 'Error del servidor' });
+    console.error("Get sale detail error", err);
+    return res.status(500).json({ message: "Error del servidor" });
   }
 };
 
-export default { listSales, getSaleDetail };
+// registrar una nueva venta
+export const createSale = async (req: Request, res: Response) => {
+  try {
+    const { details } = req.body;
+    const userId = (req as any).userId; // desde el middleware de autenticacion
+
+    // validar entrada con schema de zod
+    const validatedData = SaleSchema.parse({ details });
+
+    // construir array de detalles de venta con calculos
+    let total = 0;
+    const saleDetails: ISaleDetail[] = [];
+
+    // procesar cada detalle de producto usando el repositorio de productos
+    for (const detail of validatedData.details) {
+      const productId = new mongoose.Types.ObjectId(detail.product);
+
+      // buscar producto en BD
+      const product = (await productRepository.findProductById(
+        productId
+      )) as ProductInterface | null;
+
+      if (!product) {
+        return res
+          .status(404)
+          .json({ message: `Producto ${detail.product} no encontrado` });
+      }
+      // validar que hay stock disponible
+      if (product.stock < detail.amountSold) {
+        return res.status(400).json({
+          message: `Stock insuficiente para ${product.name}. Disponible: ${product.stock}`,
+        });
+      }
+
+      // calcular subtotal desde el interface de Product
+      const subtotal = product.price * detail.amountSold;
+      total += subtotal;
+
+      // agregar detalle a la venta
+      saleDetails.push({
+        product: productId,
+        name: product.name,
+        amountSold: detail.amountSold,
+        subtotal: subtotal,
+      });
+
+      // actualizar stock del producto
+      const updated = await productRepository.decrementStock(
+        productId,
+        detail.amountSold
+      );
+      if (!updated) {
+        return res.status(400).json({
+          message: `No se pudo decrementar stock para ${product.name}.`,
+        });
+      }
+    }
+
+    // crear la venta con el total calculado
+    const newSale = await saleRepository.create({
+      date: new Date(),
+      user: userId,
+      detail: saleDetails,
+      total: total,
+    });
+
+    return res.status(201).json({
+      message: "Venta registrada exitosamente",
+      sale: newSale,
+    });
+  } catch (err) {
+    console.error("Create sale error", err);
+
+    // validar errores de zod
+    if (err instanceof Error && err.message.includes("ZodError")) {
+      return res.status(400).json({ message: "Datos de venta inválidos" });
+    }
+
+    return res.status(500).json({ message: "Error del servidor" });
+  }
+};
+
+export default { listSales, getSaleDetail, createSale };
