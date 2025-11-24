@@ -1,8 +1,10 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import categoryRouter from './routes/category.routes';
+import productRouter from './routes/product.routes';
 
-// cargar variables de entorno
+//Cargar variables de entorno
 dotenv.config();
 const { connect } = require('./config/db');
 
@@ -31,6 +33,9 @@ app.use('/api/sales', saleRoutes);
 app.get('/', (req: Request, res: Response) => {
   res.status(200).send('API running successfully');
 });
+// Rutas funcionales
+app.use("/categories", categoryRouter);
+app.use("/products", productRouter)
 
 // iniciar servidor
 const PORT = process.env.PORT;
