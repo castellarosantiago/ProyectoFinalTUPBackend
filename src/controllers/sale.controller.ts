@@ -6,11 +6,10 @@ import { ISaleDetail } from "../types/sales.interface";
 import { SaleSchema } from "../schemas/sale.schema";
 import mongoose from "mongoose";
 
-const saleRepository = new SaleRepository();
-
 // Listar ventas con filtros opcionales (por fecha y usuario)
 export const listSales = async (req: Request, res: Response) => {
   try {
+    const saleRepository = new SaleRepository();
     const { startDate, endDate, userId } = req.query;
 
     // construir filtro dinamico
@@ -52,6 +51,7 @@ export const listSales = async (req: Request, res: Response) => {
 // Obtener detalle de una venta especifica
 export const getSaleDetail = async (req: Request, res: Response) => {
   try {
+    const saleRepository = new SaleRepository();
     const { id } = req.params;
 
     // validar que el id sea valido
@@ -80,6 +80,7 @@ export const getSaleDetail = async (req: Request, res: Response) => {
 // registrar una nueva venta
 export const createSale = async (req: Request, res: Response) => {
   try {
+    const saleRepository = new SaleRepository();
     const { details } = req.body;
     const userId = (req as any).userId; // desde el middleware de autenticacion
 
