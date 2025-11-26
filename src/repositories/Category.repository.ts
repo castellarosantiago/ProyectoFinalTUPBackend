@@ -1,6 +1,6 @@
 import { Types } from 'mongoose';
 import Category from '../models/Category';
-import { CategoryInterface, CategoryInputInterface } from '../types/categoryType';
+import { CategoryInterface, CategoryInputInterface } from '../types/category.interface';
 
 class CategoryRepository {
 

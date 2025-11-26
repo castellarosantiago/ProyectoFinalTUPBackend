@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import CategoryRepository from "../repositories/Category.repository";
-import { CategoryInputInterface } from "../types/categoryType";
+import { CategoryInputInterface } from "../types/category.interface";
 import { Types } from "mongoose";
 
 class CategoryController {

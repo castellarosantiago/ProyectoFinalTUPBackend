@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import { CategoryInterface } from "../types/categoryType";
+import { CategoryInterface } from "../types/category.interface";
 
 // Crea un schema correspondiente a la interfaz de documento
 // Le dice a Mongoose la forma de los datos

@@ -25,13 +25,17 @@ app.use(express.json());
 import authRoutes from './routes/auth.routes';
 app.use('/api/auth', authRoutes);
 
+// rutas de ventas
+import saleRoutes from './routes/sale.routes';
+app.use('/api/sales', saleRoutes);
+
 // ruta de prueba
 app.get('/', (req: Request, res: Response) => {
   res.status(200).send('API running successfully');
 });
 // Rutas funcionales
-app.use("/categories", categoryRouter);
-app.use("/products", productRouter)
+app.use("/api/categories", categoryRouter);
+app.use("/api/products", productRouter);
 
 // iniciar servidor
 const PORT = process.env.PORT;

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import ProductRepository from "../repositories/Product.repository";
-import { ProductPutInterface, ProductPostInterface } from "../types/productType";
+import { ProductPutInterface, ProductPostInterface } from "../types/product.interface";
 import { Types } from "mongoose";
 
 class ProductController {
