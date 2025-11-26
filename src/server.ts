@@ -34,8 +34,8 @@ app.get('/', (req: Request, res: Response) => {
   res.status(200).send('API running successfully');
 });
 // Rutas funcionales
-app.use("/categories", categoryRouter);
-app.use("/products", productRouter)
+app.use("/api/categories", categoryRouter);
+app.use("/api/products", productRouter);
 
 // iniciar servidor
 const PORT = process.env.PORT;
