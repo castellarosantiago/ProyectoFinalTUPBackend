@@ -1,19 +1,16 @@
-import { Request, Response, NextFunction } from 'express';
+// Middleware verifica que el rol del usuario es Admin, para acceder a las rutas protegidas.
+import { Request, Response, NextFunction } from "express";
 
-// middleware que verifica que el usuario tenga uno de los roles permitidos
-// uso: requireRole('admin') o requireRole('empleado', 'admin')
-export const requireRole = (...roles: string[]) => {
-	return (req: Request, res: Response, next: NextFunction) => {
-		const user = (req as any).user;
-		if (!user) return res.status(401).json({ message: 'No autenticado' });
+export function authorizeAdmin(req: Request, res: Response, next: NextFunction) {
+    const role = (req as any).user.role;
 
-		const userRole = user.rol || user.role;
-		if (!userRole || !roles.includes(userRole)) {
-			return res.status(403).json({ message: 'Acceso denegado: rol insuficiente' });
-		}
+    if (!role) {
+        return res.status(401).json({ error: "Usuario no autenticado" });
+    }
 
-		return next();
-	};
-};
+    if (role !== "admin") {
+        return res.status(403).json({ error: "Acceso permitido solo para administradores" });
+    }
 
-export default requireRole;
+    next();
+}
