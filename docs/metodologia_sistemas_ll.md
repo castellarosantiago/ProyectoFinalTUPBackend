@@ -255,8 +255,71 @@ app.listen(PORT, () => {
 ```
 
 ---
+## 10. Testing y Aseguramiento de Calidad (QA)
 
-## 10. Arquitectura del Proyecto
+Para garantizar la fiabilidad del software y prevenir regresiones, implementamos una estrategia de testing dividida en dos niveles: Pruebas Unitarias y Pruebas de Integración.
+
+### 10.1. Pruebas Unitarias (Unit Testing)
+Los archivos de test residen en la misma carpeta que el componente que evalúan.
+
+#### Justificación
+- **Localidad:** Facilita encontrar el test asociado a un controlador específico.
+- **Aislamiento:** Permite probar funciones individuales (como validaciones de negocio) sin levantar todo el servidor.
+
+
+> ![Estructura de archivos de test](../img/test2.png)
+
+---
+
+### 10.2. Pruebas de Integración (E2E)
+Utilizamos **Supertest** y **Jest** para simular peticiones HTTP reales y verificar el flujo completo de la información desde la ruta hasta la base de datos.
+
+#### Justificación
+- **Validación de Flujos:** Asegura que los módulos (Rutas, Controladores, Modelos) interactúen correctamente entre sí.
+- **Cobertura de "Happy Path" y Errores:** Se testearon tanto los casos de éxito (crear una venta) como los casos borde (intentar loguearse con password incorrecto).
+- **Entorno Controlado:** Se configuraron scripts (`beforeAll`, `afterAll`) para conectar y limpiar una base de datos de prueba, asegurando que cada test corra en un entorno limpio.
+
+#### Ejemplos del Proyecto:
+A continuación se muestra un test de integración que valida el registro de usuarios, verificando códigos de estado HTTP (201, 400) y la estructura de la respuesta.
+
+```typescript
+// Fragmento de integration.test.ts usando Supertest
+describe('POST /api/auth/register', () => {
+  
+  // Caso de éxito
+  it('✓ Debería registrar un nuevo usuario (empleado)', async () => {
+    const response = await request(app)
+      .post('/api/auth/register')
+      .send({
+        name: 'Juan Pérez',
+        email: 'juan@example.com',
+        password: 'Password123',
+        role: 'empleado'
+      });
+
+    expect(response.status).toBe(201); // Esperamos creación exitosa
+    expect(response.body).toHaveProperty('token'); // Debe devolver JWT
+    expect(response.body.user).not.toHaveProperty('password'); // No debe exponer la password
+  });
+
+  // Caso de error (Validación)
+  it('✗ Debería rechazar registro con contraseña débil', async () => {
+    const response = await request(app)
+      .post('/api/auth/register')
+      .send({
+        name: 'Test User',
+        email: 'weak@example.com',
+        password: '123', // Contraseña inválida
+        role: 'empleado'
+      });
+
+    expect(response.status).toBe(400); // Bad Request
+  });
+});
+```
+> ![Respuesta test de integracion](../img/test.png)
+---
+## 11. Arquitectura del Proyecto
 
 El sistema se diseñó siguiendo una separación de responsabilidades para asegurar la escalabilidad.
 
@@ -273,4 +336,3 @@ El sistema se diseñó siguiendo una separación de responsabilidades para asegu
 
 
 > ![Diagrama de arquitectura o estructura de carpetas](../img/carpetas.png)
-> *Fig 4. Estructura de carpetas del proyecto backend.*
