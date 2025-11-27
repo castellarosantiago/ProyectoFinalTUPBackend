@@ -7,16 +7,21 @@ export const validate = (schema:ZodType, source: 'body' | 'params' | 'query' = '
     
     return async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const result = schema.parseAsync(req[source]); 
-            req[source] = result
+            const result = await schema.parseAsync(req[source]); 
+            
+            // no asignar a req.query o req.params si son read-only, solo a req.body
+            if (source === 'body') {
+                req.body = result;
+            }
+            
             next();
         } catch (error) {
-            // Si falla la validación
+            // si falla la validación
             if (error instanceof ZodError) {
                 const errors = error.errors.map((e) => ({ field: e.path.join('.'), message: e.message }));
                 return res.status(400).json({ message: 'Error de validación de datos de entrada.', errors });
             }
-            // Si sucede otro error
+            // si sucede otro error
             return res.status(500).json({ message: 'Error interno del servidor en la validación.' });
         }
     };

@@ -42,23 +42,39 @@ describe('Integration Tests - ProyectoFinalTUPBackend', () => {
   let categoryId: string;
   let productId: string;
 
-  // Setup: conectar a MongoDB
+  // conexión única a MongoDB (una sola vez)
   beforeAll(async () => {
     try {
       await connect();
       console.log(' MongoDB conectado para tests');
-      
-      // limpiar datos previos (opcional, útil para tests limpios)
-      await User.deleteMany({});
-      await Product.deleteMany({});
-      await Category.deleteMany({});
     } catch (err) {
       console.error(' Error conectando a MongoDB:', err);
       throw err;
     }
   });
 
-  // Teardown: desconectar de MongoDB
+  // limpiar y resetear antes de cada test
+  beforeEach(async () => {
+    try {
+      // limpiar datos previos para cada test
+      await User.deleteMany({});
+      await Product.deleteMany({});
+      await Category.deleteMany({});
+      
+      // resetear tokens e IDs
+      authToken = '';
+      adminToken = '';
+      employeeId = '';
+      adminId = '';
+      categoryId = '';
+      productId = '';
+    } catch (err) {
+      console.error(' Error limpiando BD antes del test:', err);
+      throw err;
+    }
+  });
+
+  // Teardown: desconectar de MongoDB (una sola vez al final)
   afterAll(async () => {
     try {
       // limpiar datos después de tests
@@ -95,9 +111,12 @@ describe('Integration Tests - ProyectoFinalTUPBackend', () => {
         expect(response.body.user).toHaveProperty('email', 'juan@example.com');
         expect(response.body.user).not.toHaveProperty('password'); // no expone pwd
         expect(response.body).toHaveProperty('token');
+        expect(response.body.token).toBeTruthy(); // token no vacío
         
         authToken = response.body.token;
         employeeId = response.body.user._id;
+        
+        console.log('empleado registrado:', { employeeId, tokenExists: !!authToken });
       });
 
       it('✓ Debería registrar un nuevo usuario (admin)', async () => {
@@ -113,9 +132,12 @@ describe('Integration Tests - ProyectoFinalTUPBackend', () => {
         expect(response.status).toBe(201);
         expect(response.body.user.role).toBe('admin');
         expect(response.body).toHaveProperty('token');
+        expect(response.body.token).toBeTruthy(); // token no vacío
         
         adminToken = response.body.token;
         adminId = response.body.user._id;
+        
+        console.log('admin registrado:', { adminId, tokenExists: !!adminToken });
       });
 
       it('✗ Debería rechazar registro con contraseña débil (sin mayúscula)', async () => {
@@ -159,11 +181,24 @@ describe('Integration Tests - ProyectoFinalTUPBackend', () => {
       });
 
       it('✗ Debería rechazar registro con email duplicado', async () => {
+        // primero registrar usuario
+        const firstRes = await request(app)
+          .post('/api/auth/register')
+          .send({
+            name: 'Primer Usuario',
+            email: 'duplicate@example.com',
+            password: 'Password123',
+            role: 'empleado'
+          });
+        
+        expect(firstRes.status).toBe(201);
+
+        // intentar registrar con mismo email
         const response = await request(app)
           .post('/api/auth/register')
           .send({
             name: 'Otro Nombre',
-            email: 'juan@example.com', // email ya registrado
+            email: 'duplicate@example.com', // email ya registrado
             password: 'Password456',
             role: 'empleado'
           });
@@ -204,10 +239,23 @@ describe('Integration Tests - ProyectoFinalTUPBackend', () => {
     describe('POST /api/auth/login', () => {
       
       it('✓ Debería hacer login con credenciales válidas', async () => {
+        // primero registrar usuario
+        const registerRes = await request(app)
+          .post('/api/auth/register')
+          .send({
+            name: 'Juan Pérez',
+            email: 'login@example.com',
+            password: 'Password123',
+            role: 'empleado'
+          });
+        
+        expect(registerRes.status).toBe(201);
+
+        // luego hacer login
         const response = await request(app)
           .post('/api/auth/login')
           .send({
-            email: 'juan@example.com',
+            email: 'login@example.com',
             password: 'Password123'
           });
 
@@ -250,6 +298,29 @@ describe('Integration Tests - ProyectoFinalTUPBackend', () => {
   // ============================================================
   describe('📂 Categorías - CRUD', () => {
     
+    let testToken: string;
+    let testCategoryId: string;
+
+    beforeEach(async () => {
+      // registrar usuario para tests de categorías
+      const registerRes = await request(app)
+        .post('/api/auth/register')
+        .send({
+          name: 'Category Test User',
+          email: 'category@example.com',
+          password: 'CatPass123',
+          role: 'empleado'
+        });
+      
+      if (registerRes.status === 201 && registerRes.body.token) {
+        testToken = registerRes.body.token;
+        console.log('token para categorías generado correctamente');
+      } else {
+        console.error(' fallo al registrar usuario para categorías:', registerRes.status);
+        throw new Error('No se pudo registrar usuario para tests de categorías');
+      }
+    });
+    
     describe('GET /api/categories', () => {
       
       it('✓ Debería obtener lista de categorías (pública)', async () => {
@@ -266,7 +337,7 @@ describe('Integration Tests - ProyectoFinalTUPBackend', () => {
       it('✓ Debería crear una categoría (con auth)', async () => {
         const response = await request(app)
           .post('/api/categories')
-          .set('Authorization', `Bearer ${authToken}`)
+          .set('Authorization', `Bearer ${testToken}`)
           .send({
             name: 'Electrónica',
             description: 'Productos electrónicos en general'
@@ -277,7 +348,7 @@ describe('Integration Tests - ProyectoFinalTUPBackend', () => {
         expect(response.body.category).toHaveProperty('_id');
         expect(response.body.category.name).toBe('Electrónica');
         
-        categoryId = response.body.category._id;
+        testCategoryId = response.body.category._id;
       });
 
       it('✗ Debería rechazar crear categoría sin token', async () => {
@@ -297,12 +368,23 @@ describe('Integration Tests - ProyectoFinalTUPBackend', () => {
     describe('GET /api/categories/:id', () => {
       
       it('✓ Debería obtener una categoría por ID', async () => {
+        // crear categoría primero
+        const createRes = await request(app)
+          .post('/api/categories')
+          .set('Authorization', `Bearer ${testToken}`)
+          .send({
+            name: 'Electrónica Test',
+            description: 'Para obtener'
+          });
+        
+        const catId = createRes.body.category._id;
+
         const response = await request(app)
-          .get(`/api/categories/${categoryId}`);
+          .get(`/api/categories/${catId}`);
 
         expect(response.status).toBe(200);
-        expect(response.body._id).toBe(categoryId);
-        expect(response.body.name).toBe('Electrónica');
+        expect(response.body._id).toBe(catId);
+        expect(response.body.name).toBe('Electrónica Test');
       });
 
       it('✗ Debería retornar 404 para categoría no existente', async () => {
@@ -316,9 +398,20 @@ describe('Integration Tests - ProyectoFinalTUPBackend', () => {
     describe('PUT /api/categories/:id', () => {
       
       it('✓ Debería actualizar una categoría', async () => {
+        // crear categoría
+        const createRes = await request(app)
+          .post('/api/categories')
+          .set('Authorization', `Bearer ${testToken}`)
+          .send({
+            name: 'Electrónica',
+            description: 'Descripción original'
+          });
+        
+        const catId = createRes.body.category._id;
+
         const response = await request(app)
-          .put(`/api/categories/${categoryId}`)
-          .set('Authorization', `Bearer ${authToken}`)
+          .put(`/api/categories/${catId}`)
+          .set('Authorization', `Bearer ${testToken}`)
           .send({
             name: 'Electrónica Actualizada',
             description: 'Descripción actualizada'
@@ -335,7 +428,7 @@ describe('Integration Tests - ProyectoFinalTUPBackend', () => {
         // crear una nueva categoría para eliminar
         const createRes = await request(app)
           .post('/api/categories')
-          .set('Authorization', `Bearer ${authToken}`)
+          .set('Authorization', `Bearer ${testToken}`)
           .send({
             name: 'Temporal',
             description: 'Para eliminar'
@@ -345,7 +438,7 @@ describe('Integration Tests - ProyectoFinalTUPBackend', () => {
 
         const response = await request(app)
           .delete(`/api/categories/${tempCategoryId}`)
-          .set('Authorization', `Bearer ${authToken}`);
+          .set('Authorization', `Bearer ${testToken}`);
 
         expect(response.status).toBe(200);
         expect(response.body.message).toBe('Categoría eliminada correctamente');
@@ -357,6 +450,45 @@ describe('Integration Tests - ProyectoFinalTUPBackend', () => {
   // TESTS DE PRODUCTOS (CRUD)
   // ============================================================
   describe('📦 Productos - CRUD', () => {
+    
+    let testToken: string;
+    let testCategoryId: string;
+    let testProductId: string;
+
+    beforeEach(async () => {
+      // registrar usuario para tests de productos
+      const registerRes = await request(app)
+        .post('/api/auth/register')
+        .send({
+          name: 'Product Test User',
+          email: 'product@example.com',
+          password: 'ProdPass123',
+          role: 'empleado'
+        });
+      
+      if (registerRes.status === 201 && registerRes.body.token) {
+        testToken = registerRes.body.token;
+        console.log('token para productos generado correctamente');
+      } else {
+        throw new Error('No se pudo registrar usuario para tests de productos');
+      }
+
+      // crear categoría para tests de productos
+      const categoryRes = await request(app)
+        .post('/api/categories')
+        .set('Authorization', `Bearer ${testToken}`)
+        .send({
+          name: 'Electrónica Productos',
+          description: 'Para tests'
+        });
+      
+      if (categoryRes.status === 201) {
+        testCategoryId = categoryRes.body.category._id;
+        console.log('categoría para productos creada correctamente');
+      } else {
+        throw new Error('No se pudo crear categoría para tests de productos');
+      }
+    });
     
     describe('GET /api/products', () => {
       
@@ -374,9 +506,9 @@ describe('Integration Tests - ProyectoFinalTUPBackend', () => {
       it('✓ Debería crear un producto', async () => {
         const response = await request(app)
           .post('/api/products')
-          .set('Authorization', `Bearer ${authToken}`)
+          .set('Authorization', `Bearer ${testToken}`)
           .send({
-            id_category: categoryId,
+            id_category: testCategoryId,
             name: 'Monitor LG 24"',
             price: 250.99,
             stock: 5
@@ -388,13 +520,13 @@ describe('Integration Tests - ProyectoFinalTUPBackend', () => {
         expect(response.body.product.name).toBe('Monitor LG 24"');
         expect(response.body.product.price).toBe(250.99);
         
-        productId = response.body.product._id;
+        testProductId = response.body.product._id;
       });
 
       it('✗ Debería rechazar producto sin categoría válida', async () => {
         const response = await request(app)
           .post('/api/products')
-          .set('Authorization', `Bearer ${authToken}`)
+          .set('Authorization', `Bearer ${testToken}`)
           .send({
             id_category: '000000000000000000000000',
             name: 'Producto Inválido',
@@ -408,9 +540,9 @@ describe('Integration Tests - ProyectoFinalTUPBackend', () => {
       it('✗ Debería rechazar precio negativo', async () => {
         const response = await request(app)
           .post('/api/products')
-          .set('Authorization', `Bearer ${authToken}`)
+          .set('Authorization', `Bearer ${testToken}`)
           .send({
-            id_category: categoryId,
+            id_category: testCategoryId,
             name: 'Producto Inválido',
             price: -50,
             stock: 1
@@ -423,11 +555,24 @@ describe('Integration Tests - ProyectoFinalTUPBackend', () => {
     describe('GET /api/products/:id', () => {
       
       it('✓ Debería obtener un producto por ID', async () => {
+        // crear producto primero
+        const createRes = await request(app)
+          .post('/api/products')
+          .set('Authorization', `Bearer ${testToken}`)
+          .send({
+            id_category: testCategoryId,
+            name: 'Producto Test',
+            price: 99.99,
+            stock: 3
+          });
+        
+        const prodId = createRes.body.product._id;
+
         const response = await request(app)
-          .get(`/api/products/${productId}`);
+          .get(`/api/products/${prodId}`);
 
         expect(response.status).toBe(200);
-        expect(response.body._id).toBe(productId);
+        expect(response.body._id).toBe(prodId);
       });
 
       it('✗ Debería retornar 404 para producto no existente', async () => {
@@ -441,9 +586,22 @@ describe('Integration Tests - ProyectoFinalTUPBackend', () => {
     describe('PUT /api/products/:id', () => {
       
       it('✓ Debería actualizar un producto', async () => {
+        // crear producto
+        const createRes = await request(app)
+          .post('/api/products')
+          .set('Authorization', `Bearer ${testToken}`)
+          .send({
+            id_category: testCategoryId,
+            name: 'Monitor LG 24"',
+            price: 250.99,
+            stock: 5
+          });
+        
+        const prodId = createRes.body.product._id;
+
         const response = await request(app)
-          .put(`/api/products/${productId}`)
-          .set('Authorization', `Bearer ${authToken}`)
+          .put(`/api/products/${prodId}`)
+          .set('Authorization', `Bearer ${testToken}`)
           .send({
             name: 'Monitor LG 27"',
             price: 299.99,
@@ -461,9 +619,9 @@ describe('Integration Tests - ProyectoFinalTUPBackend', () => {
         // crear producto para eliminar
         const createRes = await request(app)
           .post('/api/products')
-          .set('Authorization', `Bearer ${authToken}`)
+          .set('Authorization', `Bearer ${testToken}`)
           .send({
-            id_category: categoryId,
+            id_category: testCategoryId,
             name: 'Producto Temporal',
             price: 100,
             stock: 1
@@ -473,7 +631,7 @@ describe('Integration Tests - ProyectoFinalTUPBackend', () => {
 
         const response = await request(app)
           .delete(`/api/products/${tempProductId}`)
-          .set('Authorization', `Bearer ${authToken}`);
+          .set('Authorization', `Bearer ${testToken}`);
 
         expect(response.status).toBe(200);
         expect(response.body.message).toBe('Producto eliminado correctamente');
@@ -483,6 +641,17 @@ describe('Integration Tests - ProyectoFinalTUPBackend', () => {
     describe('GET /api/products/search/name', () => {
       
       it('✓ Debería buscar productos por nombre', async () => {
+        // crear producto
+        await request(app)
+          .post('/api/products')
+          .set('Authorization', `Bearer ${testToken}`)
+          .send({
+            id_category: testCategoryId,
+            name: 'Monitor Test',
+            price: 250,
+            stock: 5
+          });
+
         const response = await request(app)
           .get('/api/products/search/name?name=Monitor');
 
@@ -501,13 +670,24 @@ describe('Integration Tests - ProyectoFinalTUPBackend', () => {
     describe('GET /api/products/filter/category', () => {
       
       it('✓ Debería filtrar productos por categoría', async () => {
+        // crear producto
+        await request(app)
+          .post('/api/products')
+          .set('Authorization', `Bearer ${testToken}`)
+          .send({
+            id_category: testCategoryId,
+            name: 'Producto Filtro',
+            price: 100,
+            stock: 2
+          });
+
         const response = await request(app)
-          .get(`/api/products/filter/category?id_category=${categoryId}`);
+          .get(`/api/products/filter/category?id_category=${testCategoryId}`);
 
         expect(response.status).toBe(200);
         expect(Array.isArray(response.body)).toBe(true);
         if (response.body.length > 0) {
-          expect(response.body[0].id_category.toString()).toBe(categoryId);
+          expect(response.body[0].id_category.toString()).toBe(testCategoryId);
         }
       });
     });
@@ -537,6 +717,26 @@ describe('Integration Tests - ProyectoFinalTUPBackend', () => {
   // ============================================================
   describe('🔒 JWT y Protección de Rutas', () => {
     
+    let jwtToken: string;
+
+    beforeEach(async () => {
+      // registrar usuario para tests JWT
+      const registerRes = await request(app)
+        .post('/api/auth/register')
+        .send({
+          name: 'JWT Test User',
+          email: 'jwt@example.com',
+          password: 'JwtPass123',
+          role: 'empleado'
+        });
+      
+      if (registerRes.status === 201 && registerRes.body.token) {
+        jwtToken = registerRes.body.token;
+      } else {
+        throw new Error('No se pudo registrar usuario para tests JWT');
+      }
+    });
+    
     it('✗ Debería rechazar request sin token en rutas protegidas (futuro)', async () => {
       // Nota: Esto documenta que actualmente las rutas NO están protegidas
       // Cuando se implemente protección con auth middleware, esto debería fallar (401)
@@ -563,7 +763,7 @@ describe('Integration Tests - ProyectoFinalTUPBackend', () => {
     it('✓ Debería aceptar request con token válido', async () => {
       const response = await request(app)
         .get('/api/categories')
-        .set('Authorization', `Bearer ${authToken}`);
+        .set('Authorization', `Bearer ${jwtToken}`);
 
       expect(response.status).toBe(200);
     });
@@ -573,6 +773,40 @@ describe('Integration Tests - ProyectoFinalTUPBackend', () => {
   // TESTS DE VALIDACIÓN Y ERROR HANDLING
   // ============================================================
   describe('⚠️ Validación y Manejo de Errores', () => {
+    
+    let validationToken: string;
+    let validationCategoryId: string;
+
+    beforeEach(async () => {
+      // registrar usuario para tests de validación
+      const registerRes = await request(app)
+        .post('/api/auth/register')
+        .send({
+          name: 'Validation Test User',
+          email: 'validation@example.com',
+          password: 'ValPass123',
+          role: 'empleado'
+        });
+      
+      if (registerRes.status === 201 && registerRes.body.token) {
+        validationToken = registerRes.body.token;
+      } else {
+        throw new Error('No se pudo registrar usuario para tests de validación');
+      }
+
+      // crear categoría para tests
+      const categoryRes = await request(app)
+        .post('/api/categories')
+        .set('Authorization', `Bearer ${validationToken}`)
+        .send({
+          name: 'Categoría Validación',
+          description: 'Para tests'
+        });
+      
+      if (categoryRes.status === 201) {
+        validationCategoryId = categoryRes.body.category._id;
+      }
+    });
     
     it('✗ Debería rechazar registro sin todos los campos requeridos', async () => {
       const response = await request(app)
@@ -599,9 +833,9 @@ describe('Integration Tests - ProyectoFinalTUPBackend', () => {
     it('✗ Debería rechazar producto con datos inválidos', async () => {
       const response = await request(app)
         .post('/api/products')
-        .set('Authorization', `Bearer ${authToken}`)
+        .set('Authorization', `Bearer ${validationToken}`)
         .send({
-          id_category: categoryId,
+          id_category: validationCategoryId,
           // falta name, price, stock
         });
 
@@ -634,6 +868,7 @@ describe('Integration Tests - ProyectoFinalTUPBackend', () => {
 
       expect(registerRes.status).toBe(201);
       const flowToken = registerRes.body.token;
+      expect(flowToken).toBeTruthy();
 
       // 2. Crear categoría
       const categoryRes = await request(app)
@@ -696,23 +931,47 @@ describe('Integration Tests - ProyectoFinalTUPBackend', () => {
     });
 
     it('✓ Flujo de login múltiple con diferentes usuarios', async () => {
-      // Login employee
+      // crear usuario 1
+      const user1Res = await request(app)
+        .post('/api/auth/register')
+        .send({
+          name: 'User Uno',
+          email: 'user1@example.com',
+          password: 'User1Pass123',
+          role: 'empleado'
+        });
+      
+      expect(user1Res.status).toBe(201);
+
+      // crear usuario 2
+      const user2Res = await request(app)
+        .post('/api/auth/register')
+        .send({
+          name: 'User Admin',
+          email: 'user2@example.com',
+          password: 'User2Pass123',
+          role: 'admin'
+        });
+      
+      expect(user2Res.status).toBe(201);
+
+      // Login user 1
       const empRes = await request(app)
         .post('/api/auth/login')
         .send({
-          email: 'juan@example.com',
-          password: 'Password123'
+          email: 'user1@example.com',
+          password: 'User1Pass123'
         });
 
       expect(empRes.status).toBe(200);
       expect(empRes.body.user.role).toBe('empleado');
 
-      // Login admin
+      // Login user 2
       const adminRes = await request(app)
         .post('/api/auth/login')
         .send({
-          email: 'admin@example.com',
-          password: 'AdminPass123'
+          email: 'user2@example.com',
+          password: 'User2Pass123'
         });
 
       expect(adminRes.status).toBe(200);

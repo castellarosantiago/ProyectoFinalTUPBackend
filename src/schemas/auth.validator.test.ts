@@ -5,7 +5,7 @@ describe('Auth Validation Schemas', () => {
   // pruebas de registro
   describe('registerSchema', () => {
     // debe aceptar datos validos
-    test('should accept valid register data', async () => {
+    test('debería aceptar datos de registro válidos', async () => {
       const validData = {
         name: 'Juan Perez',
         email: 'juan@example.com',
@@ -18,7 +18,7 @@ describe('Auth Validation Schemas', () => {
     });
 
     // debe rechazar si no tiene mayuscula
-    test('should reject password without uppercase', async () => {
+    test('debería rechazar contraseña sin mayúscula', async () => {
       const invalidData = {
         name: 'Juan',
         email: 'juan@example.com',
@@ -27,14 +27,14 @@ describe('Auth Validation Schemas', () => {
       };
       try {
         await registerSchema.parseAsync(invalidData);
-        fail('Should have thrown validation error');
+        fail('debería haber lanzado un error de validación');
       } catch (err: any) {
         expect(err.issues[0].message).toContain('mayuscula');
       }
     });
 
     // debe rechazar si no tiene numero
-    test('should reject password without number', async () => {
+    test('debería rechazar contraseña sin número', async () => {
       const invalidData = {
         name: 'Juan',
         email: 'juan@example.com',
@@ -43,14 +43,14 @@ describe('Auth Validation Schemas', () => {
       };
       try {
         await registerSchema.parseAsync(invalidData);
-        fail('Should have thrown validation error');
+        fail('debería haber lanzado un error de validación');
       } catch (err: any) {
         expect(err.issues[0].message).toContain('numero');
       }
     });
 
     // debe rechazar contrasena muy corta
-    test('should reject password shorter than 8 characters', async () => {
+    test('debería rechazar contraseña menor a 8 caracteres', async () => {
       const invalidData = {
         name: 'Juan',
         email: 'juan@example.com',
@@ -59,14 +59,14 @@ describe('Auth Validation Schemas', () => {
       };
       try {
         await registerSchema.parseAsync(invalidData);
-        fail('Should have thrown validation error');
+        fail('debería haber lanzado un error de validación');
       } catch (err: any) {
         expect(err.issues[0].message).toContain('8 caracteres');
       }
     });
 
     // debe rechazar email invalido
-    test('should reject invalid email', async () => {
+    test('debería rechazar email inválido', async () => {
       const invalidData = {
         name: 'Juan',
         email: 'not-an-email',
@@ -75,14 +75,14 @@ describe('Auth Validation Schemas', () => {
       };
       try {
         await registerSchema.parseAsync(invalidData);
-        fail('Should have thrown validation error');
+        fail('debería haber lanzado un error de validación');
       } catch (err: any) {
         expect(err.issues).toBeDefined();
       }
     });
 
     // debe sanitizar caracteres especiales
-    test('should sanitize HTML special characters', async () => {
+    test('debería sanear caracteres HTML especiales', async () => {
       const dataWithHTML = {
         name: '<script>alert("xss")</script>',
         email: 'juan@example.com',
@@ -98,7 +98,7 @@ describe('Auth Validation Schemas', () => {
   // pruebas de login
   describe('loginSchema', () => {
     // debe aceptar datos validos
-    test('should accept valid login data', async () => {
+    test('debería aceptar datos de login válidos', async () => {
       const validData = {
         email: 'juan@example.com',
         password: 'Password123',
@@ -109,7 +109,7 @@ describe('Auth Validation Schemas', () => {
     });
 
     // rol por defecto es empleado
-    test('should have default rol as empleado', async () => {
+    test('debería tener rol por defecto como empleado', async () => {
       const validData = {
         email: 'juan@example.com',
         password: 'Password123',
@@ -119,14 +119,14 @@ describe('Auth Validation Schemas', () => {
     });
 
     // debe rechazar email invalido
-    test('should reject invalid email', async () => {
+    test('debería rechazar email inválido', async () => {
       const invalidData = {
         email: 'not-an-email',
         password: 'Password123',
       };
       try {
         await loginSchema.parseAsync(invalidData);
-        fail('Should have thrown validation error');
+        fail('debería haber lanzado un error de validación');
       } catch (err: any) {
         expect(err.issues).toBeDefined();
       }

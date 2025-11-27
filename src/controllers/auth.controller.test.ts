@@ -1,188 +1,138 @@
 import { login, register } from '../controllers/auth.controller';
-import User from '../models/User';
+import userRepository from '../repositories/User.repository';
 import bcrypt from 'bcryptjs';
 import { Request, Response } from 'express';
 
-// mocks globales para el aislamiento y no usar la bd
-// mock de mongoose User model y bcryptjs
-jest.mock('../models/User');
+
+jest.mock('../repositories/User.repository');
 jest.mock('bcryptjs');
 
 describe('Auth Controller Unitarios', () => {
-  // mocks de Express: req, res, status y json
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
   let mockJsonResponse: jest.Mock;
   let mockStatusResponse: jest.Mock;
 
-  // datos base para las pruebas
   const baseUserData = {
-    nombre: 'Juan Pérez',
+    name: 'Juan Pérez',
     email: 'juan@example.com',
     password: 'Password123',
-    rol: 'empleado',
+    role: 'empleado',
   };
-  
-  // objeto de usuario simulado devuelto por Mongoose
-  const mockUserInstance = {
-    ...baseUserData,
+
+  const mockUserPlain = {
     _id: '123',
+    name: baseUserData.name,
+    email: baseUserData.email,
+    role: baseUserData.role,
+  };
+
+  const mockUserDoc = {
+    ...mockUserPlain,
     password: 'hashedPassword',
-    toObject: jest.fn().mockReturnValue({ 
-      _id: '123', 
-      nombre: baseUserData.nombre, 
-      email: baseUserData.email, 
-      rol: baseUserData.rol 
-    }),
-    save: jest.fn(),
+    toObject: jest.fn().mockReturnValue(mockUserPlain),
   };
 
   beforeEach(() => {
-    // limpieza de mocks
     jest.clearAllMocks();
-
-    // configuracion de la respuesta mockeada (res.status().json())
     mockJsonResponse = jest.fn().mockReturnValue(undefined);
     mockStatusResponse = jest.fn().mockReturnValue({ json: mockJsonResponse });
     mockResponse = { status: mockStatusResponse };
     mockRequest = {};
   });
 
-  //  test de registro
   describe('Register', () => {
-    it('Debería registrar un usuario y devolver 201', async () => {
+    it('crea un usuario y devuelve 201', async () => {
       mockRequest = { body: baseUserData };
-
-      // User.findOne busca email: retorna null simulando que el usuario no existe
-      (User.findOne as jest.Mock).mockResolvedValueOnce(null);
-      // User constructor (crea nueva instancia): simula la creacion de la instancia mock
-      (User as unknown as jest.Mock).mockImplementationOnce(() => mockUserInstance);
-      // bcrypt.genSalt: retorna salt
+      (userRepository.findByEmail as jest.Mock).mockResolvedValueOnce(null);
+      (userRepository.createUser as jest.Mock).mockResolvedValueOnce(mockUserPlain);
       (bcrypt.genSalt as jest.Mock).mockResolvedValueOnce('salt');
-      // bcrypt.hash: retorna hash
       (bcrypt.hash as jest.Mock).mockResolvedValueOnce('hashedPassword');
-      // userInstance.save: retorna la instancia guardada simulando exito
-      (mockUserInstance.save as jest.Mock).mockResolvedValueOnce(mockUserInstance);
-      
-      await register(mockRequest as Request, mockResponse as Response);
+
+      const mockNext = jest.fn();
+      await register(mockRequest as Request, mockResponse as Response, mockNext);
 
       expect(mockStatusResponse).toHaveBeenCalledWith(201);
       expect(mockJsonResponse).toHaveBeenCalledWith(
-        expect.objectContaining({
-          message: 'Usuario creado',
-          user: expect.objectContaining({ email: baseUserData.email }),
-        })
+        expect.objectContaining({ message: 'Usuario creado', user: expect.objectContaining({ email: baseUserData.email }) })
       );
-      expect(mockUserInstance.save).toHaveBeenCalledTimes(1);
+      expect(userRepository.createUser).toHaveBeenCalledTimes(1);
     });
 
-    it('debería retornar error 409 si el email ya existe', async () => {
+    it('retorna 409 cuando el email ya existe', async () => {
       mockRequest = { body: baseUserData };
+      (userRepository.findByEmail as jest.Mock).mockResolvedValueOnce(mockUserPlain);
 
-      // configuración de mocks: User.findOne encuentra usuario
-      (User.findOne as jest.Mock).mockResolvedValueOnce(mockUserInstance);
-
-      await register(mockRequest as Request, mockResponse as Response);
+      await register(mockRequest as Request, mockResponse as Response, jest.fn());
 
       expect(mockStatusResponse).toHaveBeenCalledWith(409);
-      expect(mockJsonResponse).toHaveBeenCalledWith({
-        message: 'El email ya esta registrado',
-      });
-      expect(mockUserInstance.save).not.toHaveBeenCalled();
+      expect(mockJsonResponse).toHaveBeenCalledWith({ message: 'El email ya esta registrado' });
+      expect(userRepository.createUser).not.toHaveBeenCalled();
     });
 
-    it('Debería retornar error 500 si hay un fallo de servidor ej. error de hasheo', async () => {
-        mockRequest = { body: baseUserData };
-        
-        // configuracion de mocks: simula un fallo en el proceso de hasheo
-        (User.findOne as jest.Mock).mockResolvedValueOnce(null);
-        (User as unknown as jest.Mock).mockImplementationOnce(() => mockUserInstance);
-        (bcrypt.genSalt as jest.Mock).mockResolvedValueOnce('salt');
-        (bcrypt.hash as jest.Mock).mockRejectedValueOnce(new Error('Hash failed'));
+    it('pasa errores a next()', async () => {
+      mockRequest = { body: baseUserData };
+      (userRepository.findByEmail as jest.Mock).mockResolvedValueOnce(null);
+      (bcrypt.genSalt as jest.Mock).mockResolvedValueOnce('salt');
+      (bcrypt.hash as jest.Mock).mockRejectedValueOnce(new Error('Hash failed'));
 
-        await register(mockRequest as Request, mockResponse as Response);
+      const mockNext = jest.fn();
+      await register(mockRequest as Request, mockResponse as Response, mockNext);
 
-        expect(mockStatusResponse).toHaveBeenCalledWith(500);
-        expect(mockJsonResponse).toHaveBeenCalledWith({
-          message: 'Error del servidor',
-        });
+      expect(mockNext).toHaveBeenCalled();
+      expect(mockStatusResponse).not.toHaveBeenCalled();
     });
   });
 
-  // test de login
   describe('Login', () => {
-    const loginData = {
-      email: 'juan@example.com',
-      password: 'Password123',
-    };
-    
-    // usuario encontrado en DB con hash
-    const foundUser = {
-      ...mockUserInstance,
-      password: 'hashedPassword',
-    };
+    const loginData = { email: 'juan@example.com', password: 'Password123' };
 
-    it('Debería hacer login correctamente y devolver 200', async () => {
+    it('inicia sesión y devuelve 200', async () => {
       mockRequest = { body: loginData };
-
-      // User.findOne: encuentra el usuario
-      (User.findOne as jest.Mock).mockResolvedValueOnce(foundUser);
-      // bcrypt.compare: retorna true (contraseña correcta)
+      (userRepository.findRawByEmail as jest.Mock).mockResolvedValueOnce(mockUserDoc);
       (bcrypt.compare as jest.Mock).mockResolvedValueOnce(true);
 
-      await login(mockRequest as Request, mockResponse as Response);
+      const mockNext = jest.fn();
+      await login(mockRequest as Request, mockResponse as Response, mockNext);
 
       expect(mockStatusResponse).toHaveBeenCalledWith(200);
       expect(mockJsonResponse).toHaveBeenCalledWith(
-        expect.objectContaining({
-          message: 'Login exitoso',
-          user: expect.objectContaining({ email: loginData.email }),
-        })
+        expect.objectContaining({ message: 'Login exitoso', user: expect.objectContaining({ email: loginData.email }) })
       );
-      expect(bcrypt.compare).toHaveBeenCalledWith(loginData.password, foundUser.password);
+      expect(bcrypt.compare).toHaveBeenCalledWith(loginData.password, mockUserDoc.password);
     });
 
-    it('Debería retornar error 401 si el usuario no existe', async () => {
+    it('retorna 401 cuando el usuario no existe', async () => {
       mockRequest = { body: loginData };
+      (userRepository.findRawByEmail as jest.Mock).mockResolvedValueOnce(null);
 
-      //User.findOne no encuentra nada
-      (User.findOne as jest.Mock).mockResolvedValueOnce(null);
-
-      await login(mockRequest as Request, mockResponse as Response);
+      await login(mockRequest as Request, mockResponse as Response, jest.fn());
 
       expect(mockStatusResponse).toHaveBeenCalledWith(401);
-      expect(mockJsonResponse).toHaveBeenCalledWith({
-        message: 'Credenciales invalidas',
-      });
+      expect(mockJsonResponse).toHaveBeenCalledWith({ message: 'Credenciales invalidas' });
       expect(bcrypt.compare).not.toHaveBeenCalled();
     });
 
-    it('Debería retornar error 401 si la contraseña es incorrecta', async () => {
+    it('retorna 401 cuando la contraseña es incorrecta', async () => {
       mockRequest = { body: loginData };
+      (userRepository.findRawByEmail as jest.Mock).mockResolvedValueOnce(mockUserDoc);
+      (bcrypt.compare as jest.Mock).mockResolvedValueOnce(false);
 
-      (User.findOne as jest.Mock).mockResolvedValueOnce(foundUser);
-      (bcrypt.compare as jest.Mock).mockResolvedValueOnce(false); // contraseña incorrecta
-
-      await login(mockRequest as Request, mockResponse as Response);
+      await login(mockRequest as Request, mockResponse as Response, jest.fn());
 
       expect(mockStatusResponse).toHaveBeenCalledWith(401);
-      expect(mockJsonResponse).toHaveBeenCalledWith({
-        message: 'Credenciales invalidas',
-      });
+      expect(mockJsonResponse).toHaveBeenCalledWith({ message: 'Credenciales invalidas' });
     });
 
-    it('Debería retornar error 500 si hay un error del servidor fallo de db', async () => {
+    it('pasa errores de BD a next()', async () => {
       mockRequest = { body: loginData };
+      (userRepository.findRawByEmail as jest.Mock).mockRejectedValueOnce(new Error('Database error'));
 
-      // User.findOne lanza error
-      (User.findOne as jest.Mock).mockRejectedValueOnce(new Error('Database error'));
+      const mockNext = jest.fn();
+      await login(mockRequest as Request, mockResponse as Response, mockNext);
 
-      await login(mockRequest as Request, mockResponse as Response);
-
-      expect(mockStatusResponse).toHaveBeenCalledWith(500);
-      expect(mockJsonResponse).toHaveBeenCalledWith({
-        message: 'Error del servidor',
-      });
+      expect(mockNext).toHaveBeenCalled();
+      expect(mockStatusResponse).not.toHaveBeenCalled();
     });
   });
 });
