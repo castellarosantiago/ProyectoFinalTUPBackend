@@ -7,7 +7,7 @@ export const validate = (schema:ZodType, source: 'body' | 'params' | 'query' = '
     
     return async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const result = schema.parseAsync(req[source]); 
+            const result = await schema.parseAsync(req[source]); 
             req[source] = result
             next();
         } catch (error) {
