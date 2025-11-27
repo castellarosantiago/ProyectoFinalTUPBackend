@@ -11,7 +11,7 @@ if (!MONGO_URI) {
 
 let isConnected = false;
 
-async function connect() {
+export async function connect() {
   if (isConnected) {
     return mongoose.connection;
   }
@@ -27,13 +27,13 @@ async function connect() {
   return mongoose.connection;
 }
 
-async function disconnect() {
+export async function disconnect() {
   if (!isConnected) return;
   await mongoose.disconnect();
   isConnected = false;
 }
 
-module.exports = { connect, disconnect };
+
 
 
 
