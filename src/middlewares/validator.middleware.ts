@@ -8,8 +8,12 @@ export const validate = (schema:ZodType, source: 'body' | 'params' | 'query' = '
     return async (req: Request, res: Response, next: NextFunction) => {
         try {
             const result = await schema.parseAsync(req[source]); 
-            req[source] = result
+
+            if (source === 'body') {
+                req[source] = result;
+            }
             next();
+            
         } catch (error) {
             // Si falla la validación
             if (error instanceof ZodError) {
