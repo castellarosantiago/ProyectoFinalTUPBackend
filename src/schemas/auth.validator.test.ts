@@ -1,4 +1,4 @@
-import { registerSchema, loginSchema } from '../validators/auth.schemas';
+import { registerSchema, loginSchema } from '../schemas/auth.schemas';
 
 // tests de validacion
 describe('Auth Validation Schemas', () => {
