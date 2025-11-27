@@ -4,50 +4,51 @@ API RESTful desarrollada con Node.js, Express y MongoDB para la gestión de prod
 
 ## Estructura del Proyecto
 
-\`\`\`
+```
 src/
-├── server.ts              # Punto de entrada de la aplicación
-├── config/                # Configuraciones generales
-│   └── db.ts             # Configuración y conexión a MongoDB
-├── models/               # Modelos de Mongoose (esquemas de BD)
-│   ├── User.ts           # Modelo de usuarios
-│   ├── Product.ts        # Modelo de productos
-│   ├── Category.ts       # Modelo de categorías
-│   └── Sale.ts           # Modelo de ventas con detalles
-├── repositories/         # Capa de acceso a datos (patrón Repository)
+├── server.ts              
+├── config/               
+│   └── db.ts             
+├── models/               
+│   ├── User.ts           
+│   ├── Product.ts        
+│   ├── Category.ts       
+│   └── Sale.ts           
+├── repositories/        
 │   ├── User.repository.ts
 │   ├── Product.repository.ts
 │   ├── Category.repository.ts
 │   └── Sale.repository.ts
-├── controllers/          # Lógica de negocio de la aplicación
+├── controllers/         
 │   ├── auth.controller.ts
 │   ├── product.controller.ts
 │   ├── category.controller.ts
 │   └── sale.controller.ts
-├── routes/               # Definición de endpoints y rutas
+├── routes/               
 │   ├── auth.routes.ts
 │   ├── product.routes.ts
 │   ├── category.routes.ts
 │   └── sale.routes.ts
-├── middlewares/          # Middlewares de la aplicación
-│   ├── auth.middleware.ts          # Verificación de JWT
-│   ├── role.middleware.ts          # Autorización por roles
-│   ├── validator.middleware.ts     # Validación de datos con Zod
-│   ├── rateLimit.middleware.ts     # Rate limiting general
-│   └── rateLimitLogin.middleware.ts # Rate limiting para login
-├── schemas/              # Esquemas de validación con Zod
-│   ├── auth.schemas.ts          # Validación de registro y login
-│   ├── product.schema.ts        # Validación de productos y filtros
-│   ├── category.schema.ts       # Validación de categorías
-│   ├── sale.schema.ts           # Validación de ventas y detalles
-│   └── id.schema.ts             # Validación de ObjectId de MongoDB
-├── types/                # Definiciones de tipos TypeScript
-│   ├── category.interface.ts     # Define CategoryInterface (documento) y CategoryInputInterface (DTO)
-│   ├── product.interface.ts      # Define interfaces para Product con variantes POST (crear) y PUT (actualizar)
-│   └── sales.interface.ts       # Define ISale e ISaleDetail para representar ventas y su detalle de productos vendidos
-└── utils/                # Utilidades y helpers
-    └── jwt.ts            # Utilidades para firmar y verificar tokens JWT
-\`\`\`
+├── middlewares/          
+│   ├── auth.middleware.ts          
+│   ├── role.middleware.ts          
+│   ├── validator.middleware.ts     
+│   ├── rateLimit.middleware.ts     
+│   └── rateLimitLogin.middleware.ts
+├── schemas/              
+│   ├── auth.schemas.ts          
+│   ├── product.schema.ts        
+│   ├── category.schema.ts       
+│   ├── sale.schema.ts           
+│   └── id.schema.ts             
+├── types/                
+│   ├── category.interface.ts     
+│   ├── product.interface.ts      
+│   └── sales.interface.ts       
+└── utils/                
+    └── jwt.ts
+```
+
 
 ## Descripción de Carpetas
 
