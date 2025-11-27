@@ -20,7 +20,7 @@ class SaleRepository {
   //Buscar por id
   public async findById(id: string | Types.ObjectId): Promise<ISale | null> {
     return SaleModel.findById(id)
-      .populate('user', 'nombre email rol')
+      .populate('user', 'name email role')
       .populate('detail.product', 'name price stock id_category')
       .exec();
   }
@@ -28,7 +28,7 @@ class SaleRepository {
   //Buscar todos
   public async findAll(filter: any = {}): Promise<ISale[]> {
     return SaleModel.find(filter)
-      .populate('user', 'nombre email rol')
+      .populate('user', 'name email role')
       .populate('detail.product', 'name price stock id_category')
       .sort({ date: -1 })
       .exec();
