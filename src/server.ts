@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import categoryRouter from './routes/category.routes';
 import productRouter from './routes/product.routes';
+import { rateLimitGlobal } from './middlewares/rateLimit.middleware';
 
 //Cargar variables de entorno
 dotenv.config();
@@ -20,6 +21,7 @@ const app = express();
 // middlewares globales
 app.use(cors());
 app.use(express.json());
+app.use(rateLimitGlobal)
 
 // rutas de autenticacion
 import authRoutes from './routes/auth.routes';
