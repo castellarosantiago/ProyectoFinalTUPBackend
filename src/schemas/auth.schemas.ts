@@ -25,8 +25,7 @@ export const registerSchema = z.object({
 export const loginSchema = z.object({
   email: z.string().email().transform((v: string) => sanitizeString(v)),
   password: z.string().min(1).transform((v: string) => (typeof v === 'string' ? v.trim() : '')),
-  // rol por defecto
-  role: z.enum(['empleado', 'admin']).optional().transform((v: string | undefined) => v || 'empleado'),
+  // NOTA: el rol NO se valida en login, se obtiene de la BD
 });
 
 // tipos typescript generados desde schemas

@@ -37,6 +37,10 @@ app.use("/api/categories", categoryRouter);
 // rutas de productos
 app.use("/api/products", productRouter);
 
+// middleware de manejo centralizado de errores
+import errorHandler from './utils/errorHandler';
+app.use(errorHandler);
+
 // iniciar servidor
 const PORT = process.env.PORT;
 

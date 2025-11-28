@@ -31,8 +31,8 @@ class ProductRepository {
     }
 
     // Opciones de filtrado
-    public async findProductByName(name:string):Promise<ProductInterface | null> {
-        return await Product.findOne({ name: { $regex: name, $options: 'i' } }).exec();
+    public async findProductByName(name:string):Promise<ProductInterface[]> {
+        return await Product.find({ name: { $regex: name, $options: 'i' } }).exec();
     }
 
     public async filterByCategory(id_category:Types.ObjectId):Promise<ProductInterface[]> {

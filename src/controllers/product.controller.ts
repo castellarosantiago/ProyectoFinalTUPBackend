@@ -97,13 +97,13 @@ class ProductController {
 
         try {
 
-            const product = await ProductRepository.findProductByName(String(name));
+            const products = await ProductRepository.findProductByName(String(name));
 
-            if (!product){
+            if (!products || products.length === 0){
                 return res.status(404).json({ message: "No se encontró ningún producto con el nombre ingresado." });
             }
     
-            res.status(200).json(product);
+            res.status(200).json(products);
         } catch (err){
             if (err instanceof Error){
                 return res.status(500).json({ message: "Ha ocurrido un problema al buscar un producto por su nombre.", error: err.message });
