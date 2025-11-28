@@ -82,7 +82,7 @@ export const createSale = async (req: Request, res: Response) => {
   try {
     const saleRepository = new SaleRepository();
     const { details } = req.body;
-    const userId = (req as any).userId; // desde el middleware de autenticacion
+    const userId = (req as any).user.id; // desde el middleware de autenticacion
 
     // validar entrada con schema de zod
     const validatedData = SaleSchema.parse({ details });

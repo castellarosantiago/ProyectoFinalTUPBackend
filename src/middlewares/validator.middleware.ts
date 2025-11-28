@@ -8,13 +8,12 @@ export const validate = (schema:ZodType, source: 'body' | 'params' | 'query' = '
     return async (req: Request, res: Response, next: NextFunction) => {
         try {
             const result = await schema.parseAsync(req[source]); 
-            
-            // no asignar a req.query o req.params si son read-only, solo a req.body
+
             if (source === 'body') {
-                req.body = result;
+                req[source] = result;
             }
-            
             next();
+            
         } catch (error) {
             // si falla la validación
             if (error instanceof ZodError) {

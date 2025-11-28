@@ -45,7 +45,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     const userObj = userDoc.toObject();
     const { password: _, ...userWithoutPassword } = userObj;
 
-    const token = signJwt({ id: userWithoutPassword._id, email: userWithoutPassword.email, name: userWithoutPassword.name, role: userWithoutPassword.role });
+  const token = signJwt({ id: userWithoutPassword._id, email: userWithoutPassword.email, name: userWithoutPassword.name, role: userWithoutPassword.role });
 
     return res.status(200).json({ message: 'Login exitoso', user: userWithoutPassword, token });
   } catch (err) {

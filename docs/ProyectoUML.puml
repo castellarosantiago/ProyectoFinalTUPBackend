@@ -70,10 +70,7 @@ class ConexionDB {
   +conectar()
   +desconectar()
 }
-note right of ConexionDB
-  Patrón: Singleton
-  Asegura una única instancia global
-end note
+
 
 ' =============================
 ' FACADE
@@ -86,10 +83,7 @@ class FacadeReportes {
 FacadeReportes ..> ConexionDB : usa >
 FacadeReportes ..> Venta
 FacadeReportes ..> Producto
-note right of FacadeReportes
-  Patrón: Facade
-  Simplifica operaciones de reportes y dashboard
-end note
+
 
 ' =============================
 ' STRATEGY
@@ -105,10 +99,6 @@ EstrategiaAutenticacion <|.. AuthLocal
 EstrategiaAutenticacion <|.. AuthGoogle
 Usuario ..> EstrategiaAutenticacion : usa >
 
-note right of EstrategiaAutenticacion
-  Patrón: Strategy
-  Permite intercambiar métodos de autenticación
-end note
 
 ' =============================
 ' OBSERVER
@@ -131,10 +121,4 @@ class Dashboard {
 Sujeto o-- "1..*" ObservadorDashboard
 Dashboard ..|> ObservadorDashboard
 Sujeto --> Dashboard : notifica >
-
-note right of Sujeto
-  Patrón: Observer
-  Dashboard se actualiza ante cambios en ventas o stock
-end note
-
 @enduml
