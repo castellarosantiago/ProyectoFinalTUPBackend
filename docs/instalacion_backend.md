@@ -68,7 +68,7 @@ node dist/server.js
 
 ## 5) Endpoints y colección Postman
 
-Hay una colección de Postman en `docs/Coleccion_Postman.md` que documenta los endpoints y ejemplos de requests.
+Hay una colección de Postman en `docs/coleccion_postman.md` que documenta los endpoints y ejemplos de requests.
 
 ---
 
