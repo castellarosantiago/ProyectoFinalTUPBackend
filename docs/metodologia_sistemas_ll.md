@@ -318,8 +318,51 @@ describe('POST /api/auth/register', () => {
 });
 ```
 > ![Respuesta test de integracion](../img/test.png)
+> 
 ---
-## 11. Arquitectura del Proyecto
+
+## 11. Gestión de Dependencias y Reproducibilidad
+
+Para garantizar la estabilidad del entorno de desarrollo y evitar inconsistencias entre las máquinas de los desarrolladores y el servidor de producción, se implementó una estrategia estricta de gestión de paquetes.
+
+### Justificación
+- **Determinismo:** Al utilizar `package-lock.json`, aseguramos que todos los integrantes del equipo instalen exactamente el mismo árbol de dependencias, bit por bit.
+- **Prevención de "Breaking Changes":** Evitamos que actualizaciones automáticas de librerías de terceros (ej: cambios menores que introducen bugs) rompan la aplicación inesperadamente.
+- **Integridad:** El archivo de bloqueo (`lockfile`) actúa como una fuente de verdad inmutable sobre qué versiones son compatibles con nuestro sistema.
+
+### Ejemplos del Proyecto:
+Se realizó el proceso de fijar versiones y regenerar el archivo de control para asegurar la reproducibilidad.
+
+1.  **Fijación de Versiones en `package.json`:**
+    Se optó por definir versiones exactas en dependencias críticas, eliminando caracteres de rango (como `^` o `~`) que permiten actualizaciones automáticas no supervisadas.
+
+    ```json
+    // Ejemplo de configuración en package.json
+    "dependencies": {
+      "@types/bcryptjs": "2.4.6",
+      "@types/validator": "13.15.6",
+      "bcryptjs": "2.4.3",
+      "cors": "2.8.5",
+      "dotenv": "17.2.3",
+      "express": "5.1.0",
+      "express-rate-limit": "8.2.1",
+      "jsonwebtoken": "9.0.0",
+      "mongoose": "8.19.2",
+      "validator": "13.15.23",
+      "zod": "3.25.76"
+    },
+    ```
+
+2.  **Sincronización con `package-lock.json`:**
+    Este archivo fue commiteado al repositorio Git. Para instalar las dependencias, el equipo utiliza el comando `npm ci` (Clean Install) en lugar de `npm install`, lo que fuerza el uso de las versiones exactas del lockfile.
+
+
+> ![Comparativa de package.json y package-lock.json](../img/dependencias.png)
+
+
+---
+
+## 12. Arquitectura del Proyecto
 
 El sistema se diseñó siguiendo una separación de responsabilidades para asegurar la escalabilidad.
 
