@@ -49,6 +49,12 @@ src/
     └── jwt.ts
 ```
 
+## Documentación adicional
+
+Dentro de la carpeta `docs/` se encuentra el archivo **metodologia_sistemas_ll.md**, correspondiente a la entrega de la materia *Metodología de Sistemas II*.
+
+Dentro de la carpeta `docs/` se encuentra el archivo **instalacion_backend.md**, con una guia para levantar el backend
+
 
 ## Descripción de Carpetas
 
