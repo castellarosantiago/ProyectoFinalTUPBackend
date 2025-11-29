@@ -10,8 +10,8 @@ const categoryRouter = Router();
 
 categoryRouter.get("/", categoryController.getCategories);
 categoryRouter.get("/:id", validate(idSchema, "params"), categoryController.findCategoryById);
-categoryRouter.delete("/:id", authenticate, validate(idSchema, "params"), categoryController.deleteCategory);
-categoryRouter.post("/", authenticate, validate(categoryBodySchema, "body"), categoryController.createCategory);
-categoryRouter.put("/:id", authenticate, validate(idSchema, "params"), validate(categoryBodySchema, "body"), categoryController.updateCategory);
+categoryRouter.delete("/:id", authenticate, authorizeAdmin, validate(idSchema, "params"), categoryController.deleteCategory);
+categoryRouter.post("/", authenticate, authorizeAdmin, validate(categoryBodySchema, "body"), categoryController.createCategory);
+categoryRouter.put("/:id", authenticate, authorizeAdmin,validate(idSchema, "params"), validate(categoryBodySchema, "body"), categoryController.updateCategory);
 
 export default categoryRouter;
