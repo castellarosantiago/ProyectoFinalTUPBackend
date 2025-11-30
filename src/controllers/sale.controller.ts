@@ -10,12 +10,14 @@ import mongoose from "mongoose";
 export const listSales = async (req: Request, res: Response) => {
   try {
     const saleRepository = new SaleRepository();
-    const { startDate, endDate, userId } = req.query;
 
-    // construir filtro dinamico
+    const { startDate, endDate, userId, page: pageQuery, limit: limitQuery } = req.query; 
+
+    const page = parseInt(pageQuery as string) || 1;
+    const limit = parseInt(limitQuery as string) || 10;
+    
     const filter: any = {};
 
-    // filtro por rango de fechas
     if (startDate || endDate) {
       filter.date = {};
       if (startDate) {
@@ -29,18 +31,19 @@ export const listSales = async (req: Request, res: Response) => {
       }
     }
 
-    // filtro por usuario
     if (userId) {
       filter.user = userId;
     }
 
-    // buscar ventas usando el repositorio
-    const sales = await saleRepository.findAll(filter);
+    // buscar ventas usando el nuevo método paginado
+    const { sales, totalCount, totalPages } = await saleRepository.findPaginated(filter, page, limit);
 
     return res.status(200).json({
       message: "Ventas obtenidas",
-      total: sales.length,
       sales: sales,
+      totalCount: totalCount,
+      totalPages: totalPages,
+      currentPage: page,
     });
   } catch (err) {
     console.error("List sales error", err);

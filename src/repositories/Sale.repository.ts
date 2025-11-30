@@ -33,6 +33,32 @@ class SaleRepository {
       .sort({ date: -1 })
       .exec();
   }
+
+  public async findPaginated(filter: any = {}, page: number = 1, limit: number = 10): Promise<{ sales: ISale[], totalCount: number, totalPages: number }> {
+    
+    const skip = (page - 1) * limit;
+
+    // Contar el total de documentos que coinciden con el filtro
+    const totalCount = await SaleModel.countDocuments(filter).exec();
+
+    // Obtener los documentos paginados
+    const sales = await SaleModel.find(filter)
+      .populate('user', 'name email role')
+      .populate('detail.product', 'name price stock id_category')
+      .sort({ date: -1 })
+      .skip(skip) // Saltar documentos anteriores
+      .limit(limit) // Limitar la cantidad de documentos
+      .exec();
+
+    const totalPages = Math.ceil(totalCount / limit);
+
+    return {
+      sales: sales,
+      totalCount: totalCount,
+      totalPages: totalPages,
+    };
+  }
+
 }
 
 export default SaleRepository;
