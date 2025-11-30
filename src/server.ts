@@ -4,6 +4,9 @@ import dotenv from 'dotenv';
 import categoryRouter from './routes/category.routes';
 import productRouter from './routes/product.routes';
 import { rateLimitGlobal } from './middlewares/rateLimit.middleware';
+import saleRoutes from './routes/sale.routes';
+import authRoutes from './routes/auth.routes';
+import userRouter from './routes/user.routes';
 
 //Cargar variables de entorno
 dotenv.config();
@@ -24,11 +27,9 @@ app.use(express.json());
 app.use(rateLimitGlobal)
 
 // rutas de autenticacion
-import authRoutes from './routes/auth.routes';
 app.use('/api/auth', authRoutes);
 
 // rutas de ventas
-import saleRoutes from './routes/sale.routes';
 app.use('/api/sales', saleRoutes);
 
 // ruta de categorias
@@ -36,6 +37,9 @@ app.use("/api/categories", categoryRouter);
 
 // rutas de productos
 app.use("/api/products", productRouter);
+
+// rutas de usuarios
+app.use("/api/users", userRouter);
 
 // iniciar servidor
 const PORT = process.env.PORT;
