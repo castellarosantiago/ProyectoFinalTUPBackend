@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import { ProductInterface } from "../types/productType";
+import { ProductInterface } from "../types/product.interface";
 
 const ProductSchema = new Schema<ProductInterface>({ 
     id_category: { type:Schema.Types.ObjectId, required:true, ref: "Category"},

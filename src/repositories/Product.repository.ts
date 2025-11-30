@@ -1,6 +1,6 @@
 import { Types } from 'mongoose';
 import Product from '../models/Product';
-import { ProductInterface, ProductPostInterface, ProductPutInterface } from '../types/productType';
+import { ProductInterface, ProductPostInterface, ProductPutInterface } from '../types/product.interface';
 import Category from '../models/Category';
 
 class ProductRepository {
@@ -41,6 +41,19 @@ class ProductRepository {
 
     public async filterByPrice(minPrice:number, maxPrice:number):Promise<ProductInterface[]> {
         return await Product.find({ price: { $gte: minPrice, $lte: maxPrice } }).exec();
+    }
+
+    // Decrementa el stock de un producto de forma segura
+    
+    public async decrementStock(id: Types.ObjectId, amount:number):Promise<boolean> {
+        //  decrementar solo si hay stock suficiente
+        const res = await Product.updateOne(
+            { _id: id, stock: { $gte: amount } },
+            { $inc: { stock: -amount } }
+        ).exec();
+        // puede ser modifiedCount o nModified dependiendo de la version de mongoose
+        const modified = (res as any).modifiedCount ?? (res as any).nModified ?? 0; // esto lo que hace es verificar si modifiedCount existe, si no, usa nModified y si no usa 0
+        return modified > 0; // Retorna true si se actualizo stock suficiente y false si stock insuficiente
     }
 }
 

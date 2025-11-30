@@ -3,38 +3,44 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import categoryRouter from './routes/category.routes';
 import productRouter from './routes/product.routes';
+import { rateLimitGlobal } from './middlewares/rateLimit.middleware';
 
 //Cargar variables de entorno
 dotenv.config();
-const { connect } = require('./config/db')
+const { connect } = require('./config/db');
 
-
-
-//Conexion DB
-
-connect().catch((err:Error) => {
+// conectar a base de datos
+connect().catch((err: Error) => {
   console.error('DB connection error:', err.message);
   process.exit(1);
 });
 
+// crear app express
 const app = express();
 
-
-//Middlewares
+// middlewares globales
 app.use(cors());
 app.use(express.json());
+app.use(rateLimitGlobal)
 
-//Ruta de prueba
-app.get('/', (req: Request, res: Response) => {
-    res.status(200).send('API running successfully');
-});
-// Rutas funcionales
-app.use("/categories", categoryRouter);
-app.use("/products", productRouter)
+// rutas de autenticacion
+import authRoutes from './routes/auth.routes';
+app.use('/api/auth', authRoutes);
 
+// rutas de ventas
+import saleRoutes from './routes/sale.routes';
+app.use('/api/sales', saleRoutes);
+
+// ruta de categorias
+app.use("/api/categories", categoryRouter);
+
+// rutas de productos
+app.use("/api/products", productRouter);
+
+// iniciar servidor
 const PORT = process.env.PORT;
 
 app.listen(PORT, () => {
-    console.log('Server running in PORT:', PORT);
-    console.log(`http://localhost:${PORT}`);
+  console.log('Server running in PORT:', PORT);
+  console.log(`http://localhost:${PORT}`);
 });
