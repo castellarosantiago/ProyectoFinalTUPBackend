@@ -47,13 +47,13 @@ class UserController {
         }
 
         try {
-            const updatedProduct = await UserRepository.updateUser(id, dataValidate);
+            const updatedUser = await UserRepository.updateUser(id, dataValidate);
             
-            if (!updatedProduct){
+            if (!updatedUser){
                 return res.status(404).json({ message: "No se pudo modificar el usuario con el ID ingresado."});
             }
             
-            return res.status(200).json({ message: "Usuario modificado correctamente.", product:updatedProduct});
+            return res.status(200).json({ message: "Usuario modificado correctamente.", user:updatedUser});
         } catch (err){
             if (err instanceof Error){
                 return res.status(500).json({ message: "Ha ocurrido un problema al intentar modificar el usuario.", error: err.message });
