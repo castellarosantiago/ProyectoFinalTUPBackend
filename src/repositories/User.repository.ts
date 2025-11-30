@@ -1,12 +1,6 @@
 // user repository: encapsula el acceso a datos de usuarios
 import UserModel, { IUser } from '../models/User';
-
-type CreateUserDTO = {
-  name: string;
-  email: string;
-  password: string;
-  role?: 'empleado' | 'admin';
-};
+import { CreateUserDTO, UserPutInterface } from '../types/user.interface';
 
 const toPlain = (doc: IUser) => {
   const obj = doc.toObject();
@@ -40,19 +34,19 @@ const findById = async (id: string) => {
   return user ? toPlain(user as IUser) : null;
 };
 
-// Si hay usuarios los mapea y los devuelve sin password, y si no retorna []
 const getUsers = async () => {
   const users = await UserModel.find({}).exec();
-  if (!(users.length === -1)){
-    return users.map( user => toPlain(user))
-  }
-  return users
+  return users.map(user => toPlain(user));
+};
+
+const updateUser = async (id: string, data: UserPutInterface) => {
+  const updatedUser = await UserModel.findByIdAndUpdate(id, data, { new: true }).exec();
+  return updatedUser ? toPlain(updatedUser) : null;
+};
+
+const deleteUser = async (id:string) => {
+  const deletedUser = await UserModel.findByIdAndDelete(id).exec() 
+  return deletedUser ? toPlain(deletedUser) : null
 }
 
-const updateUser = async () => {
-
-}
-
-
-
-export default { findByEmail, findRawByEmail, createUser, findById };
+export default { findByEmail, findRawByEmail, createUser, findById, deleteUser, updateUser, getUsers };

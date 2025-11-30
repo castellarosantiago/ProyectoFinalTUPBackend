@@ -4,4 +4,11 @@ export interface UserPutInterface {
     role: 'empleado' | 'admin'
 }
 
+export type CreateUserDTO = {
+  name: string;
+  email: string;
+  password: string;
+  role?: 'empleado' | 'admin';
+};
+
 
