@@ -26,8 +26,8 @@ class SaleRepository {
   }
 
   //Buscar todos
-  public async findAll(filter: any = {}): Promise<ISale[]> {
-    return SaleModel.find(filter)
+  public async findAll(): Promise<ISale[]> {
+    return SaleModel.find({})
       .populate('user', 'name email role')
       .populate('detail.product', 'name price stock id_category')
       .sort({ date: -1 })

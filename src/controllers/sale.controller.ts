@@ -11,43 +11,53 @@ export const listSales = async (req: Request, res: Response) => {
   try {
     const saleRepository = new SaleRepository();
 
+    // Extracción y validación de parámetros de paginación
     const { startDate, endDate, userId, page: pageQuery, limit: limitQuery } = req.query; 
-
-    const page = parseInt(pageQuery as string) || 1;
-    const limit = parseInt(limitQuery as string) || 10;
+    const page = parseInt(pageQuery as string);
+    const limit = parseInt(limitQuery as string);
     
+    // construir filtro dinamico
     const filter: any = {};
 
+    // filtro por rango de fechas (lógica común)
     if (startDate || endDate) {
       filter.date = {};
       if (startDate) {
         filter.date.$gte = new Date(startDate as string);
       }
       if (endDate) {
-        // agregar 1 dia para incluir todo el dia final
         const end = new Date(endDate as string);
         end.setDate(end.getDate() + 1);
         filter.date.$lt = end;
       }
     }
 
+    // filtro por usuario (lógica común)
     if (userId) {
       filter.user = userId;
     }
 
-    // buscar ventas usando el nuevo método paginado
-    const { sales, totalCount, totalPages } = await saleRepository.findPaginated(filter, page, limit);
+    // BIFURCACIÓN DE LÓGICA
+    if (page > 0 && limit > 0) {
+        // Lógica de Paginación
+        const { sales, totalCount, totalPages } = await saleRepository.findPaginated(filter, page, limit);
 
-    return res.status(200).json({
-      message: "Ventas obtenidas",
-      sales: sales,
-      totalCount: totalCount,
-      totalPages: totalPages,
-      currentPage: page,
-    });
+        return res.status(200).json({ 
+            sales, 
+            totalCount, 
+            totalPages, 
+            currentPage: page 
+        });
+
+    } else {
+        // Lógica UNPAGINATED
+        const sales = await saleRepository.findAll();
+        return res.status(200).json(sales); 
+    }
+
   } catch (err) {
     console.error("List sales error", err);
-    return res.status(500).json({ message: "Error del servidor" });
+    return res.status(500).json({ message: "Error interno del servidor al obtener ventas." });
   }
 };
 
