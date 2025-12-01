@@ -4,7 +4,7 @@ import { idSchema } from "../schemas/id.schema";
 import { validate } from "../middlewares/validator.middleware";
 import authenticate from "../middlewares/auth.middleware";
 import { authorizeAdmin } from "../middlewares/role.middleware";
-import { userBodyPutSchema } from "../schemas/user.schema";
+import { userBodyPutSchema, userProfileBodyPutSchema } from "../schemas/user.schema";
 
 const userRouter = Router();
 
@@ -12,8 +12,9 @@ const userRouter = Router();
 userRouter.get("/", authenticate, authorizeAdmin, userController.getUsers);
 userRouter.get('/profile', authenticate, userController.getProfile);
 userRouter.delete("/:id", authenticate, authorizeAdmin, validate(idSchema, "params"), userController.deleteUser);
+userRouter.put('/profile', authenticate, validate(userProfileBodyPutSchema, "body"), userController.updateCredentials);
 userRouter.put("/:id", authenticate, authorizeAdmin, validate(idSchema, "params"), validate(userBodyPutSchema, "body"), userController.updateUser);
-userRouter.put('/profile', authenticate, userController.updateCredentials);
+
 
 export default userRouter;
 

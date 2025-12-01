@@ -77,7 +77,7 @@ class UserController {
     public async updateCredentials(req: Request, res: Response, next: NextFunction){
       try {
         const userId = (req as any).user.id;
-        const { name, email, password } = req.body;
+        const { name, email, password, confirmPassword } = req.body;
 
         const updateData: any = {};
         if (name) updateData.name = name;
@@ -95,7 +95,14 @@ class UserController {
         }
 
         const updatedUser = await UserRepository.updateUser(userId, updateData);
-        if (!updatedUser) return res.status(404).json({ message: 'Usuario no encontrado' });
+        let finalUser = updatedUser;
+
+        // Si no hubo cambios, mongoose devuelve null
+        if (!finalUser) {
+            finalUser = await UserRepository.findById(userId); 
+        }
+
+        if (!finalUser) return res.status(404).json({ message: 'Usuario no encontrado' });
 
         return res.status(200).json({ message: 'Perfil actualizado', user: updatedUser });
       } catch (err) {

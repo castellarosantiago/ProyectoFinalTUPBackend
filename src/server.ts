@@ -29,7 +29,6 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(rateLimitGlobal)
-app.use(errorHandler);
 
 // rutas de autenticacion
 app.use('/api/auth', authRoutes);
@@ -45,6 +44,8 @@ app.use("/api/products", productRouter);
 
 // rutas de usuarios
 app.use("/api/users", userRouter);
+
+app.use(errorHandler);
 
 // iniciar servidor
 const PORT = Number(process.env.PORT) || 5000;
