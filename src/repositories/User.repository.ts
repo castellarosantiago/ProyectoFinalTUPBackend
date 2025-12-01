@@ -40,4 +40,9 @@ const findById = async (id: string) => {
   return user ? toPlain(user as IUser) : null;
 };
 
-export default { findByEmail, findRawByEmail, createUser, findById };
+const updateUser = async (id: string, payload: Partial<CreateUserDTO>) => {
+  const user = await UserModel.findByIdAndUpdate(id, payload, { new: true }).exec();
+  return user ? toPlain(user as IUser) : null;
+};
+
+export default { findByEmail, findRawByEmail, createUser, findById, updateUser };

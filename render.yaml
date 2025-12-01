@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: proyectofinal-backend
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: NODE_VERSION
+        value: 20.11.0
