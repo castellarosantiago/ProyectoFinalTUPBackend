@@ -16,8 +16,8 @@ Se trabajó con tableros Jira para división de tareas, asignaciones y seguimien
 ## Documentación técnica
 Ambos repositorios contienen un README.md con una descripción del flujo general, estructura de carpetas, tecnologías utilizadas, manual de instalación y ejecución, y consideraciones finales. Además, de ser necesario, los archivos incluyen documentación interna mediante comentarios en el código para mayor comprensión y legibilidad.
 
-## Estandarización del código, buenas practicas y testing
-Se aplicaron reglas de estilo en ambos repositorios usando herramientas como **ESLint** y **Prettier**, se aplicaron patrones como Respository, Model View Controller (MVC) y Singleton, se siguieron convenciones de nombres, formato de variables y funciones.  
+## Estandarización del código, buenas prácticas y testing
+Se aplicaron reglas de estilo en ambos repositorios usando herramientas como **ESLint** y **Prettier**, se usaron patrones como Respository, Model View Controller (MVC) y Singleton, se siguieron convenciones de nombres, formato de variables y funciones.  
 Realizamos pruebas unitarias y de integración en el backend para garantizar la fiabilidad del software y prevenir regresiones. Tecnologías de testing utilizadas: **Supertest** y **Jest**
 
 ## Backend: API con seguridad y CRUD completo
@@ -36,12 +36,9 @@ Se creó una colección Postman documentada con los endpoints y ejemplos de uso.
 **Enlace a Postman:** https://crimson-astronaut-727087.postman.co/workspace/New-Team-Workspace~1e1e2ae6-4982-4ebe-a999-dedd3da3b3fb/collection/40783075-de6176d3-933a-42cf-bd05-982ff8a850b2?action=share&creator=40783075
 
 ## Base de datos MongoDB
-Creamos una base de datos **MongoDB** y la gestionamos mediante su ORM **Mongoose**.  
-Es consumida por el backend mediante la constante DB_URL en el archivo .env, y por el frontend mediante servicios organizados (AuthService, ProductService, etc.) con manejo de tokens y validación.
-![Esquema BD ](../img/esquema_bd.png)
-
-## Reportes
-**a completar**
+Creamos una base de datos **MongoDB** y la gestionamos mediante su ODM **Mongoose**.  
+Es consumida por el backend mediante la constante MONGO_URI en el archivo .env, y por el frontend mediante servicios organizados (AuthService, ProductService, etc.) con manejo de tokens y validación.
+![diagrama generado en MongoDB Compass](../img/esquema_bd.png)
 
 ---
 
@@ -62,7 +59,9 @@ Es consumida por el backend mediante la constante DB_URL en el archivo .env, y p
   - Gráficos y métricas de ventas.
   - Productos vendidos.
   - Reportes de la última semana.
+  - Botón de generación de reportes en PDF que consume el endpoint `GET /api/sales/report`.
   - Utiliza funciones `analytics.ts` y `salesCountLastWeek.ts`.
+  - Visualización mediante gráficos de Recharts (LineChart y BarChart).
 
 ## Header, Menú/Sidebar y Footer
 - Implementación completa en **Home.tsx**.
@@ -71,7 +70,14 @@ Es consumida por el backend mediante la constante DB_URL en el archivo .env, y p
 - Layout general estilizado con Tailwind + DaisyUI.
 
 ## Perfil del usuario 
-- **a completar**.
+- Implementado mediante la página **ProfilePage.tsx**.
+- Permite al usuario autenticado:
+  - Actualizar nombre completo y email.
+  - Cambiar contraseña de forma opcional.
+  - Validación de coincidencia de contraseñas.
+- Consume el endpoint `PUT /api/users/profile` protegido con JWT.
+- Al actualizar el perfil, se cierra la sesión automáticamente para que el usuario inicie sesión con las nuevas credenciales.
+- Manejo de errores y mensajes de éxito mediante react-toastify.
 
 ## Tabla + ABM de Usuarios
 - Página **UsersManager.tsx**:
@@ -106,7 +112,6 @@ Incluido mediante:
 - Detalles de venta: `GET /api/sales/:id`.
 - Detalles de producto: `GET /api/products/:id`.
 - Detalles de categoría: `GET /api/categories/:id`.
-- Informacion del usuario: **a implementar**
 
 ## Operaciones de actualización o eliminación
 Implementadas en:
@@ -120,10 +125,14 @@ El backend utiliza rutas `PUT` y `DELETE` con validaciones Zod y middlewares.
 - Historial completo de ventas filtrado por fechas.
 - Búsqueda avanzada de productos.
 - Consultas administrativas mediante listados y filtros.
+- Dashboard con estadísticas visuales en tiempo real.
 
 ## Generación de reportes completos o filtrados
-- Reportes **a completar**
-- El sistema muestra métricas y estadísticas visuales en pantalla (Dashboard).
+- Implementado en **Dashboard.tsx** con botón "Generar Reporte PDF".
+- Consume el endpoint `GET /api/sales/report` protegido con autenticación JWT.
+- Genera un archivo PDF descargable con el reporte completo de ventas.
+- El reporte se descarga automáticamente con el nombre `reporte_ventas.pdf`.
+- Manejo de errores en caso de fallo en la generación o descarga del reporte.
 
 ---
 
