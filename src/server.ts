@@ -37,10 +37,6 @@ app.use('/api/auth', authRoutes);
 // rutas de ventas
 app.use('/api/sales', saleRoutes);
 
-// rutas de usuarios
-import userRoutes from './routes/user.routes';
-app.use('/api/users', userRoutes);
-
 // ruta de categorias
 app.use("/api/categories", categoryRouter);
 

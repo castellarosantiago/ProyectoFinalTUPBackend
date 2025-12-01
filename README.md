@@ -88,7 +88,7 @@ Contiene la lógica de negocio de la aplicación. Los principales controladores 
 - **product.controller**: CRUD de productos con filtros avanzados
 - **category.controller**: CRUD de categorías
 - **sale.controller**: Gestión de ventas con validación de stock y cálculo de totales
-- **user.controller**: Gestión de usuarios
+- **user.controller**: Gestión de usuarios (CRUD completo, gestión de perfil de usuario autenticado)
 
 ### `routes/`
 Define los endpoints de la API REST y aplica middlewares de autenticación, autorización y validación:
@@ -97,31 +97,33 @@ Define los endpoints de la API REST y aplica middlewares de autenticación, auto
 - `POST /api/auth/register` - Registro de usuarios (con validación de esquema)
 - `POST /api/auth/login` - Login (con rate limiting específico)
 
-#### **product.routes**
+#### **product.routes** (requiere autenticación)
 - `GET /api/products` - Listar todos los productos
 - `GET /api/products/:id` - Obtener un producto por ID
-- `POST /api/products` - Crear producto (requiere autenticación)
-- `PUT /api/products/:id` - Actualizar producto (requiere autenticación)
-- `DELETE /api/products/:id` - Eliminar producto (requiere autenticación)
+- `POST /api/products` - Crear producto
+- `PUT /api/products/:id` - Actualizar producto
+- `DELETE /api/products/:id` - Eliminar producto 
 - `GET /api/products/search/name?name=...` - Buscar productos por nombre
 - `GET /api/products/filter/category?id_category=...` - Filtrar por categoría
 - `GET /api/products/filter/price?minPrice=...&maxPrice=...` - Filtrar por rango de precio
 
-#### **category.routes**
+#### **category.routes** (requiere autenticación)
 - `GET /api/categories` - Listar todas las categorías
 - `GET /api/categories/:id` - Obtener una categoría por ID
 - `POST /api/categories` - Crear categoría (requiere rol admin)
 - `PUT /api/categories/:id` - Actualizar categoría (requiere rol admin)
 - `DELETE /api/categories/:id` - Eliminar categoría (requiere rol admin)
 
-#### **sale.routes**
-- `POST /api/sales` - Registrar una nueva venta (requiere autenticación)
+#### **sale.routes** (requiere autenticación)
+- `POST /api/sales` - Registrar una nueva venta
 - `GET /api/sales` - Listar ventas con filtros opcionales (startDate, endDate, userId)
 - `GET /api/sales/:id` - Obtener detalle de una venta específica
 
-#### **user.routes**
+#### **user.routes** (requiere autenticación)
 - `GET /api/users` - Listar todos los usarios (requiere verificación de rol Admin)
+- `GET /api/users/profile` - Obtener perfil del usuario autenticado 
 - `PUT /api/users/:id` - Modificar datos de un usuario (requiere verificación de rol Admin)
+- `PUT /api/users/profile` - Actualizar credenciales del usuario autenticado (nombre, email, contraseña)
 - `DELETE /api/users/:id` - Eliminar un usuario (requiere verificación de rol Admin)
 
 ### `middlewares/`
@@ -170,6 +172,7 @@ Funciones auxiliares reutilizables:
 
 - Autenticación con JWT
 - Autorización basada en roles (admin/empleado)
+- Gestión de perfil de usuario (consulta y actualización de credenciales)
 - Validación de datos con Zod en todas las rutas
 - Sanitización de inputs para prevenir inyecciones
 - Rate limiting para protección contra spam y fuerza bruta

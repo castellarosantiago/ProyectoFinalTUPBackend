@@ -119,3 +119,27 @@ if (json.token) {
             }
         ]
     }
+
+------------------------------------------------------------------------
+
+## USERS
+
+    GET http://localhost:5000/api/users
+    GET http://localhost:5000/api/users/id
+    GET http://localhost:5000/api/users/profile
+
+### PUT /api/users
+
+    PUT http://localhost:5000/api/users/id
+{
+    "name":"new name",
+    "email":"newemail@gmail.com",
+    "role":"empleado"
+}
+
+    PUT http://localhost:5000/api/users/profile
+{
+    "name":"new name",
+    "email":"newemail@gmail.com",
+    "password":"newpassword"
+}
