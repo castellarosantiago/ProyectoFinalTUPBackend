@@ -33,7 +33,8 @@ La API implementa operaciones CRUD completas para:
 
 Se creó una colección Postman documentada con los endpoints y ejemplos de uso.  
 **Ubicación en repositorio backend:** docs/coleccion_postman.md  
-**Enlace a Postman:** https://crimson-astronaut-727087.postman.co/workspace/New-Team-Workspace~1e1e2ae6-4982-4ebe-a999-dedd3da3b3fb/collection/40783075-de6176d3-933a-42cf-bd05-982ff8a850b2?action=share&creator=40783075
+**Enlace a Postman:** https://crimson-astronaut-727087.postman.co/workspace/New-Team-Workspace~1e1e2ae6-4982-4ebe-a999-dedd3da3b3fb/collection/40783075-de6176d3-933a-42cf-bd05-982ff8a850b2?action=share&creator=40783075  
+**Colección exportada:** [Link al json](<SIGN - API.postman_collection.json>)
 
 ## Base de datos MongoDB
 Creamos una base de datos **MongoDB** y la gestionamos mediante su ODM **Mongoose**.  
