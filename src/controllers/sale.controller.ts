@@ -5,6 +5,7 @@ import { ProductInterface } from "../types/product.interface";
 import { ISaleDetail } from "../types/sales.interface";
 import { SaleSchema } from "../schemas/sale.schema";
 import mongoose from "mongoose";
+import PDFDocument from "pdfkit";
 
 // Listar ventas con filtros opcionales (por fecha y usuario)
 export const listSales = async (req: Request, res: Response) => {
@@ -173,4 +174,57 @@ export const createSale = async (req: Request, res: Response) => {
   }
 };
 
-export default { listSales, getSaleDetail, createSale };
+// Generar reporte de ventas en PDF
+export const generateReport = async (req: Request, res: Response) => {
+  try {
+    const saleRepository = new SaleRepository();
+    const sales = await saleRepository.findAll();
+
+    const doc = new PDFDocument();
+
+    // Configurar headers para descarga
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", "attachment; filename=reporte_ventas.pdf");
+
+    doc.pipe(res);
+
+    // Titulo
+    doc.fontSize(20).text("Reporte de Ventas", { align: "center" });
+    doc.moveDown();
+
+    // Tabla simple
+    doc.fontSize(12).text(`Fecha: ${new Date().toLocaleDateString()}`, { align: "right" });
+    doc.moveDown();
+
+    doc.fontSize(14).text("Detalle de Ventas", { underline: true });
+    doc.moveDown();
+
+    let totalSales = 0;
+
+    sales.forEach((sale, index) => {
+      const date = new Date(sale.date).toLocaleDateString();
+      const amount = sale.total.toFixed(2);
+      totalSales += sale.total;
+
+      doc.fontSize(12).text(`${index + 1}. Fecha: ${date} - Total: $${amount}`);
+      
+      // Listar productos de la venta
+      sale.detail.forEach((d: any) => {
+         doc.fontSize(10).text(`   - ${d.name} x ${d.amountSold} ($${d.subtotal})`, { indent: 20 });
+      });
+      
+      doc.moveDown(0.5);
+    });
+
+    doc.moveDown();
+    doc.font("Helvetica-Bold").fontSize(16).text(`Total General: $${totalSales.toFixed(2)}`, { align: "right" });
+
+    doc.end();
+
+  } catch (err) {
+    console.error("Generate report error", err);
+    return res.status(500).json({ message: "Error al generar reporte" });
+  }
+};
+
+export default { listSales, getSaleDetail, createSale, generateReport };

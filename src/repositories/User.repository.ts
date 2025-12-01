@@ -39,7 +39,7 @@ const getUsers = async () => {
   return users.map(user => toPlain(user));
 };
 
-const updateUser = async (id: string, data: UserPutInterface) => {
+const updateUsers = async (id: string, data: UserPutInterface) => {
   const updatedUser = await UserModel.findByIdAndUpdate(id, data, { new: true }).exec();
   return updatedUser ? toPlain(updatedUser) : null;
 };
@@ -49,4 +49,9 @@ const deleteUser = async (id:string) => {
   return deletedUser ? toPlain(deletedUser) : null
 }
 
-export default { findByEmail, findRawByEmail, createUser, findById, deleteUser, updateUser, getUsers };
+const updateUser = async (id: string, payload: Partial<CreateUserDTO>) => {
+  const user = await UserModel.findByIdAndUpdate(id, payload, { new: true }).exec();
+  return user ? toPlain(user as IUser) : null;
+};
+
+export default { findByEmail, findRawByEmail, createUser, findById, deleteUser, updateUser, getUsers, updateUsers };

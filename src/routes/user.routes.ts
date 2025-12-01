@@ -10,7 +10,18 @@ const userRouter = Router();
 
 // Rutas protegidas, solo el admin las puede utilizar
 userRouter.get("/", authenticate, authorizeAdmin, userController.getUsers);
+userRouter.get('/profile', authenticate, userController.getProfile);
 userRouter.delete("/:id", authenticate, authorizeAdmin, validate(idSchema, "params"), userController.deleteUser);
 userRouter.put("/:id", authenticate, authorizeAdmin, validate(idSchema, "params"), validate(userBodyPutSchema, "body"), userController.updateUser);
-
+userRouter.put('/profile', authenticate, userController.updateCredentials);
 export default userRouter;
+
+
+
+
+
+
+
+
+
+
