@@ -1,10 +1,10 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import userRepository from '../repositories/User.repository';
 import bcrypt from 'bcryptjs';
 import { signJwt } from '../utils/jwt';
 
 // registrar nuevo usuario
-export const register = async (req: Request, res: Response) => {
+export const register = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { name, email, password, role } = req.body;
 
@@ -19,15 +19,18 @@ export const register = async (req: Request, res: Response) => {
     // crear nuevo usuario a traves del repositorio
     const user = await userRepository.createUser({ name, email, password: hashed, role });
 
-    return res.status(201).json({ message: 'Usuario creado', user });
+    // generar token jwt
+    const token = signJwt({ id: user._id, email: user.email, name: user.name, role: user.role });
+
+    return res.status(201).json({ message: 'Usuario creado', user, token });
   } catch (err) {
     console.error('Register error', err);
-    return res.status(500).json({ message: 'Error del servidor' });
+    return next(err);
   }
 };
 
 // login de usuario
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, password } = req.body;
     // buscar usuario por email (documento crudo con password)
@@ -44,10 +47,10 @@ export const login = async (req: Request, res: Response) => {
 
   const token = signJwt({ id: userWithoutPassword._id, email: userWithoutPassword.email, name: userWithoutPassword.name, role: userWithoutPassword.role });
 
-  return res.status(200).json({ message: 'Login exitoso', user: userWithoutPassword, token });
+    return res.status(200).json({ message: 'Login exitoso', user: userWithoutPassword, token });
   } catch (err) {
     console.error('Login error', err);
-    return res.status(500).json({ message: 'Error del servidor' });
+    return next(err);
   }
 };
 

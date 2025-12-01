@@ -15,12 +15,12 @@ export const validate = (schema:ZodType, source: 'body' | 'params' | 'query' = '
             next();
             
         } catch (error) {
-            // Si falla la validación
+            // si falla la validación
             if (error instanceof ZodError) {
                 const errors = error.errors.map((e) => ({ field: e.path.join('.'), message: e.message }));
                 return res.status(400).json({ message: 'Error de validación de datos de entrada.', errors });
             }
-            // Si sucede otro error
+            // si sucede otro error
             return res.status(500).json({ message: 'Error interno del servidor en la validación.' });
         }
     };

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { listSales, getSaleDetail, createSale } from '../controllers/sale.controller';
+import { listSales, getSaleDetail, createSale, generateReport } from '../controllers/sale.controller';
 import { SaleSchema } from '../schemas/sale.schema';
 import authenticate from '../middlewares/auth.middleware';
 import { validate } from '../middlewares/validator.middleware';
@@ -9,6 +9,10 @@ const router = Router();
 // POST /api/sales
 // Body: { details: [{ product: "id", amountSold: number }, ...] }
 router.post('/', authenticate, validate(SaleSchema, "body"), createSale);
+
+// ruta para generar reporte de ventas (PDF)
+// GET /api/sales/report
+router.get('/report', authenticate, generateReport);
 
 // ruta para listar ventas (con filtros opcionales)
 // GET /api/sales?startDate=2024-01-01&endDate=2024-01-31&userId=xxx

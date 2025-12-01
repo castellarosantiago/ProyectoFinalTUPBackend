@@ -23,10 +23,12 @@ src/
 │   ├── auth.controller.ts
 │   ├── product.controller.ts
 │   ├── category.controller.ts
+│   ├── user.controller.ts
 │   └── sale.controller.ts
 ├── routes/               
 │   ├── auth.routes.ts
 │   ├── product.routes.ts
+│   ├── user.routes.ts
 │   ├── category.routes.ts
 │   └── sale.routes.ts
 ├── middlewares/          
@@ -36,14 +38,17 @@ src/
 │   ├── rateLimit.middleware.ts     
 │   └── rateLimitLogin.middleware.ts
 ├── schemas/              
-│   ├── auth.schemas.ts          
+│   ├── auth.schemas.ts  
+│   ├── auth.validator.ts          
 │   ├── product.schema.ts        
 │   ├── category.schema.ts       
-│   ├── sale.schema.ts           
+│   ├── sale.schema.ts  
+│   ├── user.schema.ts           
 │   └── id.schema.ts             
 ├── types/                
 │   ├── category.interface.ts     
-│   ├── product.interface.ts      
+│   ├── product.interface.ts   
+│   ├── user.interface.ts      
 │   └── sales.interface.ts       
 └── utils/                
     └── jwt.ts
@@ -53,7 +58,9 @@ src/
 
 Dentro de la carpeta `docs/` se encuentra el archivo **metodologia_sistemas_ll.md**, correspondiente a la entrega de la materia *Metodología de Sistemas II*.
 
-Dentro de la carpeta `docs/` se encuentra el archivo **instalacion_backend.md**, con una guia para levantar el backend
+Dentro de la carpeta `docs/` se encuentra el archivo **instalacion_backend.md**, con una guia para levantar el backend.
+
+Dentro de la carpeta `docs/` se encuentra el archivo **coleccion_postman.md**, con una guia para configurar el entorno en Postman y realizar peticiones a los endpoints.
 
 
 ## Descripción de Carpetas
@@ -81,6 +88,7 @@ Contiene la lógica de negocio de la aplicación. Los principales controladores 
 - **product.controller**: CRUD de productos con filtros avanzados
 - **category.controller**: CRUD de categorías
 - **sale.controller**: Gestión de ventas con validación de stock y cálculo de totales
+- **user.controller**: Gestión de usuarios
 
 ### `routes/`
 Define los endpoints de la API REST y aplica middlewares de autenticación, autorización y validación:
@@ -111,6 +119,11 @@ Define los endpoints de la API REST y aplica middlewares de autenticación, auto
 - `GET /api/sales` - Listar ventas con filtros opcionales (startDate, endDate, userId)
 - `GET /api/sales/:id` - Obtener detalle de una venta específica
 
+#### **user.routes**
+- `GET /api/users` - Listar todos los usarios (requiere verificación de rol Admin)
+- `PUT /api/users/:id` - Modificar datos de un usuario (requiere verificación de rol Admin)
+- `DELETE /api/users/:id` - Eliminar un usuario (requiere verificación de rol Admin)
+
 ### `middlewares/`
 Middlewares de la aplicación que se ejecutan antes de llegar a los controladores:
 - **auth.middleware**: Verifica tokens JWT para proteger rutas
@@ -126,12 +139,14 @@ Esquemas de validación usando Zod que garantizan la integridad de los datos de 
 - **category.schema**: Validación de nombre y descripción de categorías
 - **sale.schema**: Validación de ventas con detalles de productos (product ID, amountSold, subtotal)
 - **id.schema**: Validación reutilizable para ObjectId de MongoDB (24 caracteres hexadecimales)
+- **user.schema**: Validación para actualizar usuarios
 
 ### `types/`
 Definiciones de tipos e interfaces TypeScript utilizadas en toda la aplicación:
 - **category.interface**: Define `CategoryInterface` (documento) y `CategoryInputInterface` (DTO)
 - **product.interface**: Define interfaces para Product con variantes POST (crear) y PUT (actualizar)
 - **sales.interface**: Define `ISale` e `ISaleDetail` para representar ventas y su detalle de productos vendidos
+- **user.interface**: Define interfaces para User con variantes POST (crear) y PUT (actualizar)
 
 Estas interfaces aseguran type safety y consistencia en todo el código.
 
@@ -169,5 +184,5 @@ Archivo principal que inicializa y configura la aplicación:
 - Carga variables de entorno con dotenv
 - Conecta a MongoDB usando la configuración en `config/db`
 - Configura middlewares globales (cors, express.json, rate limiting)
-- Registra todas las rutas de la API (`/api/auth`, `/api/sales`, `/api/categories`, `/api/products`)
+- Registra todas las rutas de la API (`/api/auth`, `/api/sales`, `/api/categories`, `/api/products`, `/api/users`)
 - Levanta el servidor Express en el puerto especificado

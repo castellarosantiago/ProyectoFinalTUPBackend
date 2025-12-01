@@ -5,46 +5,60 @@ import { ProductInterface } from "../types/product.interface";
 import { ISaleDetail } from "../types/sales.interface";
 import { SaleSchema } from "../schemas/sale.schema";
 import mongoose from "mongoose";
+import PDFDocument from "pdfkit";
 
 // Listar ventas con filtros opcionales (por fecha y usuario)
 export const listSales = async (req: Request, res: Response) => {
   try {
     const saleRepository = new SaleRepository();
-    const { startDate, endDate, userId } = req.query;
 
+    // Extracción y validación de parámetros de paginación
+    const { startDate, endDate, userId, page: pageQuery, limit: limitQuery } = req.query; 
+    const page = parseInt(pageQuery as string);
+    const limit = parseInt(limitQuery as string);
+    
     // construir filtro dinamico
     const filter: any = {};
 
-    // filtro por rango de fechas
+    // filtro por rango de fechas (lógica común)
     if (startDate || endDate) {
       filter.date = {};
       if (startDate) {
         filter.date.$gte = new Date(startDate as string);
       }
       if (endDate) {
-        // agregar 1 dia para incluir todo el dia final
         const end = new Date(endDate as string);
         end.setDate(end.getDate() + 1);
         filter.date.$lt = end;
       }
     }
 
-    // filtro por usuario
+    // filtro por usuario (lógica común)
     if (userId) {
       filter.user = userId;
     }
 
-    // buscar ventas usando el repositorio
-    const sales = await saleRepository.findAll(filter);
+    // BIFURCACIÓN DE LÓGICA
+    if (page > 0 && limit > 0) {
+        // Lógica de Paginación
+        const { sales, totalCount, totalPages } = await saleRepository.findPaginated(filter, page, limit);
 
-    return res.status(200).json({
-      message: "Ventas obtenidas",
-      total: sales.length,
-      sales: sales,
-    });
+        return res.status(200).json({ 
+            sales, 
+            totalCount, 
+            totalPages, 
+            currentPage: page 
+        });
+
+    } else {
+        // Lógica UNPAGINATED
+        const sales = await saleRepository.findAll();
+        return res.status(200).json(sales); 
+    }
+
   } catch (err) {
     console.error("List sales error", err);
-    return res.status(500).json({ message: "Error del servidor" });
+    return res.status(500).json({ message: "Error interno del servidor al obtener ventas." });
   }
 };
 
@@ -160,4 +174,57 @@ export const createSale = async (req: Request, res: Response) => {
   }
 };
 
-export default { listSales, getSaleDetail, createSale };
+// Generar reporte de ventas en PDF
+export const generateReport = async (req: Request, res: Response) => {
+  try {
+    const saleRepository = new SaleRepository();
+    const sales = await saleRepository.findAll();
+
+    const doc = new PDFDocument();
+
+    // Configurar headers para descarga
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", "attachment; filename=reporte_ventas.pdf");
+
+    doc.pipe(res);
+
+    // Titulo
+    doc.fontSize(20).text("Reporte de Ventas", { align: "center" });
+    doc.moveDown();
+
+    // Tabla simple
+    doc.fontSize(12).text(`Fecha: ${new Date().toLocaleDateString()}`, { align: "right" });
+    doc.moveDown();
+
+    doc.fontSize(14).text("Detalle de Ventas", { underline: true });
+    doc.moveDown();
+
+    let totalSales = 0;
+
+    sales.forEach((sale, index) => {
+      const date = new Date(sale.date).toLocaleDateString();
+      const amount = sale.total.toFixed(2);
+      totalSales += sale.total;
+
+      doc.fontSize(12).text(`${index + 1}. Fecha: ${date} - Total: $${amount}`);
+      
+      // Listar productos de la venta
+      sale.detail.forEach((d: any) => {
+         doc.fontSize(10).text(`   - ${d.name} x ${d.amountSold} ($${d.subtotal})`, { indent: 20 });
+      });
+      
+      doc.moveDown(0.5);
+    });
+
+    doc.moveDown();
+    doc.font("Helvetica-Bold").fontSize(16).text(`Total General: $${totalSales.toFixed(2)}`, { align: "right" });
+
+    doc.end();
+
+  } catch (err) {
+    console.error("Generate report error", err);
+    return res.status(500).json({ message: "Error al generar reporte" });
+  }
+};
+
+export default { listSales, getSaleDetail, createSale, generateReport };
