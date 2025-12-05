@@ -2,6 +2,8 @@
 
 API RESTful desarrollada con Node.js, Express y MongoDB para la gestión de productos, ventas y autenticación de usuarios.
 
+**Deploy en Render:** https://proyectofinaltupbackend.onrender.com
+
 ## Estructura del Proyecto
 
 ```
