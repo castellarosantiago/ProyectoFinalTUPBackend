@@ -4,7 +4,7 @@
   "description": "Repositorio para alojar el backend del proyecto final de la Tecnicatura Universitaria en Programación - UTN FRBB",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node src/server.ts",
+    "start": "node dist/server.js",
     "dev": "ts-node-dev --respawn src/server.ts",
     "build": "tsc",
     "test": "jest",
